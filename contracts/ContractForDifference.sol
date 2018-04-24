@@ -73,7 +73,7 @@ contract ContractForDifference {
         uint256 CfdId
         ) 
         public 
-        constant 
+        view 
         returns (address makerAddress, Position makerPosition, address takerAddress, Position takerPosition, uint256 amount, uint256 startTime, uint256 endTime) {
         return (
             contracts[CfdId].maker.addr,
