@@ -85,4 +85,34 @@ contract ContractForDifference {
             contracts[CfdId].contractEndTime
             );
     }
+
+    function takeCfd(
+        uint256 CfdId, address takerAddress
+        ) 
+        public
+        payable
+        returns (bool success) {
+        Cfd storage cfd = contracts[CfdId];
+        
+        require (cfd.maker.addr != address(0)); // Contract must have a maker,
+        require (cfd.taker.addr == address(0)); // and no taker.
+        require(msg.value == cfd.amount);       // Takers deposit must match makers deposit.
+        require(takerAddress != address(0));    // Taker must provide a non-zero address.
+
+        cfd.taker.addr = takerAddress;
+        cfd.taker.position = cfd.maker.position == Position.Long ? Position.Short : Position.Long; // Make taker position the inverse of maker position
+        cfd.contractStartBlock = block.number;
+
+        emit LogTakeCfd(
+            CfdId,
+            cfd.maker.addr,
+            cfd.maker.position,
+            cfd.taker.addr,
+            cfd.taker.position,
+            cfd.amount,
+            cfd.contractStartBlock,
+            cfd.contractEndTime);
+            
+        return true;
+    }
 }
