@@ -11,53 +11,78 @@ contract ContractForDifference {
         Position position;
     }
     
-    struct CFD {
+    struct Cfd {
         Party maker;
         Party taker;
         
-        uint256 amount;
-        uint256 contractStartTime;
-        uint256 contractEndTime;
+        uint256 amount; // in Wei.
+        uint256 contractStartBlock; // in Unix time
+        uint256 contractEndTime; // in Unix time
     }
 
-    mapping(uint256 => CFD) private contracts;
+    mapping(uint256 => Cfd) private contracts;
     uint256                 private numberOfContracts;
 
-    event LogNewCFD (uint256 indexed CFDId, address makerAddress, Position makerPosition, uint256 endTime);
+    event LogMakeCfd (
+    uint256 indexed CfdId, 
+    address indexed makerAddress, 
+    Position makerPosition,
+    uint256 amount,
+    uint256 contractEndTime);
 
-    function makeCFD (
+    event LogTakeCfd (
+    uint256 indexed CfdId, 
+    address indexed makerAddress, 
+    Position makerPosition, 
+    address indexed takerAddress, 
+    Position takerPosition,
+    uint256 amount,
+    uint256 contractStartBlock,
+    uint256 contractEndTime);
+
+    function makeCfd(
         address  makerAddress,
         Position makerPosition,
         uint256  contractEndTime
         )
         public
         payable
-        returns(uint256 CFDId)
+        returns (uint256)
     {
-        require(msg.value > 0); // Contract amount must have a value - contracts for zero Ether does not make sense
-        contracts[numberOfContracts].maker = Party(makerAddress, makerPosition);
-        contracts[numberOfContracts].amount = msg.value;
-        contracts[numberOfContracts].contractEndTime = contractEndTime;
+        require(msg.value > 0); // Contract Wei amount must be more than zero - contracts for zero Wei does not make sense.
+        require(makerAddress != address(0)); // Maker must provide a non-zero address.
+        
+        uint256 contractId = numberOfContracts;
+
+        contracts[contractId].maker = Party(makerAddress, makerPosition);
+        contracts[contractId].amount = msg.value;
+        contracts[contractId].contractEndTime = contractEndTime;
         numberOfContracts++;
         
-        emit LogNewCFD(
-            numberOfContracts-1,
-            makerAddress,
-            makerPosition,
-            contractEndTime);
+        emit LogMakeCfd(
+            contractId,
+            contracts[contractId].maker.addr,
+            contracts[contractId].maker.position,
+            contracts[contractId].amount,
+            contracts[contractId].contractEndTime);
 
-        return numberOfContracts-1;
+        return contractId;
     }
 
-    function getCFD(uint256 CDFId) public constant returns (address, Position, address, Position, uint256, uint256, uint256) {
+    function getCfd(
+        uint256 CfdId
+        ) 
+        public 
+        constant 
+        returns (address makerAddress, Position makerPosition, address takerAddress, Position takerPosition, uint256 amount, uint256 startTime, uint256 endTime) {
         return (
-            contracts[CDFId].maker.addr,
-            contracts[CDFId].maker.position,
-            contracts[CDFId].taker.addr,
-            contracts[CDFId].taker.position,
-            contracts[CDFId].amount,
-            contracts[CDFId].contractStartTime,
-            contracts[CDFId].contractEndTime
+            contracts[CfdId].maker.addr,
+            contracts[CfdId].maker.position,
+            contracts[CfdId].taker.addr,
+            contracts[CfdId].taker.position,
+            contracts[CfdId].amount,
+            contracts[CfdId].contractStartBlock,
+            contracts[CfdId].contractEndTime
             );
     }
 }

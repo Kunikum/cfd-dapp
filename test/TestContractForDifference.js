@@ -1,32 +1,43 @@
-var ContractForDifference = artifacts.require("./ContractForDifference.sol");
+const ContractForDifference = artifacts.require("./ContractForDifference.sol");
 
-contract('ContractForDifference', function (accounts) {
+contract('ContractForDifference', (accounts) => {
+    let cfdInstance = null;
+    
+    const makerPaymentAddress = accounts[0];
+    const makerAddress = "0x3000000000000000000000000000000000000000";
+    const makerPosition = 1; // long = 0, short = 1
+    const paymentAmount = 1234; // Wei
+    const contractEndTime = 1524213232246; // Unix time
+    
+    const cfdId = 0;
+    const takerAddress = "0x7000000000000000000000000000000000000000";
+    const takerPaymentAddress = accounts[1];
+    const takerPosition = 0;
+    
+    it("...should make a CFD and save it.", async () => {
+        cfdInstance = await ContractForDifference.deployed()
+        
+        const makeCfdResp = await cfdInstance.makeCfd(
+            makerAddress,
+            makerPosition,
+            contractEndTime,
+               { from: makerPaymentAddress, value: paymentAmount }
+        );
 
-    it("...should register a CFD and return its values.", function () {
-        var makerAddress = "0x00000000000000000000000000000000000000a0";
-        var makerPosition = 1; // long = 0, short = 1
-        var contractEndTime = 1524213232246; // Unix time
-        var paymentAddress = accounts[0];
-        var paymentAmount = 1234; // Wei
+        const returnedCfd = await cfdInstance.getCfd.call(0);
 
-        return ContractForDifference.deployed().then(function (instance) {
-            contractForDifferenceInstance = instance;
-            return contractForDifferenceInstance.makeCFD(
-                makerAddress,
-                makerPosition,
-                contractEndTime,
-                { from: paymentAddress, value: paymentAmount }
-            );
-        }).then(function () {
-            return contractForDifferenceInstance.getCFD(0);
-        }).then(function (CFD) {
-            assert.equal(CFD[0], makerAddress, "returned makerAddress does not match created value.");
-            assert.equal(CFD[1], makerPosition, "returned makerPosition does not match created value.");
-            assert.equal(CFD[2], 0, "returned takerAddress is not 0.");
-            assert.equal(CFD[3], 0, "returned takerposition is not 0.");
-            assert.equal(CFD[4], paymentAmount, "returned paymentAmount does not match created value.");
-            assert.equal(CFD[5], 0, "returned contractStartTime is not 0.");
-            return assert.equal(CFD[6], contractEndTime, "returned contractEndTime does not match created value.");
-        });
+        // Validate event log
+        assert.equal(makeCfdResp.logs[0].event, 'LogMakeCfd', "Could not find expected event log"); // TODO: test the log fields
+        
+        // Validate contract data
+        assert.equal(returnedCfd[0], makerAddress, "returned makerAddress does not match passed value.");
+        assert.equal(parseInt(returnedCfd[1]), makerPosition, "returned makerPosition does not match passed value.");
+        assert.equal(parseInt(returnedCfd[2]), 0, "returned takerAddress is not 0.");
+        assert.equal(parseInt(returnedCfd[3]), 0, "returned takerposition is not 0.");
+        assert.equal(parseInt(returnedCfd[4]), paymentAmount, "returned paymentAmount does not match passed value.");
+        assert.equal(parseInt(returnedCfd[5]), 0, "returned contractStartTime is not 0.");
+        assert.equal(parseInt(returnedCfd[6]), contractEndTime, "returned contractEndTime does not match passed value.");
+    });
+
     });
 });
