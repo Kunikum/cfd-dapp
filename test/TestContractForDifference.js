@@ -1,3 +1,4 @@
+const TestUtils = require('./utils.js');
 const ContractForDifference = artifacts.require("./ContractForDifference.sol");
 
 contract('ContractForDifference', (accounts) => {
@@ -6,9 +7,10 @@ contract('ContractForDifference', (accounts) => {
     const makerPaymentAddress = accounts[0];
     const makerAddress = "0x3000000000000000000000000000000000000000";
     const makerPosition = 1; // long = 0, short = 1
-    const paymentAmount = 1234; // Wei
-    const contractEndTime = 1524213232246; // Unix time
-    
+    const paymentAmount = 1000; // Wei
+    let contractStartBlock;
+    const contractEndBlock = 5500;
+
     const cfdId = 0;
     const takerAddress = "0x7000000000000000000000000000000000000000";
     const takerPaymentAddress = accounts[1];
@@ -20,7 +22,7 @@ contract('ContractForDifference', (accounts) => {
         const makeCfdResp = await cfdInstance.makeCfd(
             makerAddress,
             makerPosition,
-            contractEndTime,
+            contractEndBlock,
                { from: makerPaymentAddress, value: paymentAmount }
         );
 
@@ -31,12 +33,12 @@ contract('ContractForDifference', (accounts) => {
         
         // Validate contract data
         assert.equal(returnedCfd[0], makerAddress, "returned makerAddress does not match passed value.");
-        assert.equal(parseInt(returnedCfd[1]), makerPosition, "returned makerPosition does not match passed value.");
-        assert.equal(parseInt(returnedCfd[2]), 0, "returned takerAddress is not 0.");
-        assert.equal(parseInt(returnedCfd[3]), 0, "returned takerposition is not 0.");
-        assert.equal(parseInt(returnedCfd[4]), paymentAmount, "returned paymentAmount does not match passed value.");
-        assert.equal(parseInt(returnedCfd[5]), 0, "returned contractStartTime is not 0.");
-        assert.equal(parseInt(returnedCfd[6]), contractEndTime, "returned contractEndTime does not match passed value.");
+        assert.equal(returnedCfd[1].toNumber(), makerPosition, "returned makerPosition does not match passed value.");
+        assert.equal(returnedCfd[2], 0, "returned takerAddress is not 0.");
+        assert.equal(returnedCfd[3].toNumber(), 0, "returned takerposition is not 0.");
+        assert.equal(returnedCfd[4].toNumber(), paymentAmount, "returned paymentAmount does not match passed value.");
+        assert.equal(returnedCfd[5].toNumber(), 0, "returned contractStartTime is not 0.");
+        assert.equal(returnedCfd[6].toNumber(), contractEndBlock, "returned contractEndTime does not match passed value.");
     });
 
     it("...should take a CFD and update its values.", async () => {        
@@ -45,6 +47,8 @@ contract('ContractForDifference', (accounts) => {
             takerAddress,
                { from: makerPaymentAddress, value: paymentAmount }
         );
+
+        contractStartBlock = takeCfdResp.receipt.blockNumber; // Save the contract start block number for later test.
         
         const cfd = await cfdInstance.getCfd(0);
 
@@ -58,6 +62,39 @@ contract('ContractForDifference', (accounts) => {
         assert.equal(cfd[3].toNumber(), takerPosition, "returned unexpected takerposition.");
         assert.equal(cfd[4].toNumber(), paymentAmount, "returned unexpected paymentAmount.");
         assert.equal(cfd[5].toNumber(), takeCfdResp.receipt.blockNumber, "returned contractStartBlock is not the current block.");
-        assert.equal(cfd[6].toNumber(), contractEndTime, "returned unexpected contractEndTime.");
+        assert.equal(cfd[6].toNumber(), contractEndBlock, "returned unexpected contractEndTime.");
+    });
+
+    /**
+     * Testing price recording functionality
+     */
+    const startPrice = 10;
+    const endPrice = 11;
+    it("...should record prices.", async () => {
+        const recordStartPriceResp = await cfdInstance.recordAssetPrice(
+            contractStartBlock,
+            startPrice
+        );
+
+        const recordEndPriceResp = await cfdInstance.recordAssetPrice(
+            contractEndBlock,
+            endPrice
+        );
+
+        const getStartPriceResp = await cfdInstance.getAssetPrice.call(contractStartBlock);
+        const getEndPriceResp = await cfdInstance.getAssetPrice.call(contractEndBlock);
+
+        // Validate event log
+        assert.equal(recordStartPriceResp.logs[0].event, 'AssetPriceRecorded', "Unexpected event log for recordStartPrice"); // TODO: test the log fields
+        assert.equal(recordEndPriceResp.logs[0].event, 'AssetPriceRecorded', "Unexpected event log for recordEndPrice"); // TODO: test the log fields
+        
+        // Validate returned price
+        assert.equal(getStartPriceResp.toNumber(), startPrice, "returned price does not match passed value.");
+        assert.equal(getEndPriceResp.toNumber(), endPrice, "returned price does not match passed value.");
+    });
+
+    it("...should settle correctly.", async () => {
+        const settleResp = await cfdInstance.settleCfd(0);
+        console.log(JSON.stringify(settleResp.logs[0]));
     });
 });

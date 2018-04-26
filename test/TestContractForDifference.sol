@@ -5,7 +5,7 @@ import "truffle/DeployedAddresses.sol";
 import "../contracts/ContractForDifference.sol";
 
 contract TestContractForDifference {
-    function testItStoresAValue() public {
+    function testSomeSolidity() public {
         // ContractForDifference cfd = ContractForDifference(DeployedAddresses.ContractForDifference());
         // cfd.set(89);
         // uint expected = 89;
