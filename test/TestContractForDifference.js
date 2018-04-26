@@ -1,4 +1,3 @@
-const TestUtils = require('./utils.js');
 const ContractForDifference = artifacts.require("./ContractForDifference.sol");
 
 contract('ContractForDifference', (accounts) => {
