@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import ContractForDifference from '../build/contracts/ContractForDifference.json'
-import getWeb3 from './utils/getWeb3'
+import web3 from './utils/web3'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -13,59 +13,22 @@ class App extends Component {
 
     this.state = {
       web3: null,
+      accounts: 'Loading...',
       owner: 'Loading...'
     }
   }
 
-  componentWillMount() {
-    // Get network provider and web3 instance.
-    // See utils/getWeb3 for more info.
+  async componentDidMount() {
+    const contract = require('truffle-contract');
+    const cfd = contract(ContractForDifference);
+    cfd.setProvider(web3.currentProvider);
+    const cfdInstance = await cfd.deployed();
 
-    getWeb3
-      .then(results => {
-        this.setState({
-          web3: results.web3
-        })
-        console.log(results.web3)
-        // Instantiate contract once web3 provided.
-        this.instantiateContract()
-      })
-      .catch(() => {
-        console.log('Error finding web3.')
-      })
-  }
-
-  instantiateContract() {
-    /*
-     * SMART CONTRACT EXAMPLE
-     *
-     * Normally these functions would be called in the context of a
-     * state management library, but for convenience I've placed them here.
-     */
-
-    const contract = require('truffle-contract')
-    const contractForDifference = contract(ContractForDifference)
-    contractForDifference.setProvider(this.state.web3.currentProvider)
-
-    // Declaring this for later so we can chain functions on SimpleStorage.
-    var contractForDifferenceInstance
-
-    // Get accounts.
-    this.state.web3.eth.getAccounts((error, accounts) => {
-      contractForDifference.deployed().then((instance) => {
-        contractForDifferenceInstance = instance
-
-        // Stores a given value, 5 by default.
-        //   return contractForDifferenceInstance.set(5, {from: accounts[0]})
-        // }).then((result) => {
-        // Get the value from the contract to prove it worked.
-        return contractForDifferenceInstance.owner.call(accounts[0])
-      }).then((result) => {
-        // Update state with the result.
-        console.log(JSON.stringify(result));
-        return this.setState({ owner: result })
-      })
-    })
+    this.setState({ 
+      web3: web3,
+      accounts: await web3.eth.getAccounts(),
+      owner: await cfdInstance.owner.call()
+    });
   }
 
   render() {
@@ -89,7 +52,11 @@ class App extends Component {
                 <tbody>
                   <tr>
                     <td>Web3 version</td>
-                    <td></td>
+                    <td>{web3.version}</td>
+                  </tr>
+                  <tr>
+                    <td>Web3 selected wallet</td>
+                    <td>{this.state.accounts}</td>
                   </tr>
                   <tr>
                     <td>Contract owner</td>
