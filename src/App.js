@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import SimpleStorageContract from '../build/contracts/SimpleStorage.json'
+import ContractForDifference from '../build/contracts/ContractForDifference.json'
 import getWeb3 from './utils/getWeb3'
 
 import './css/oswald.css'
@@ -12,8 +12,8 @@ class App extends Component {
     super(props)
 
     this.state = {
-      storageValue: 0,
-      web3: null
+      web3: null,
+      owner: 'Loading...'
     }
   }
 
@@ -22,17 +22,17 @@ class App extends Component {
     // See utils/getWeb3 for more info.
 
     getWeb3
-    .then(results => {
-      this.setState({
-        web3: results.web3
+      .then(results => {
+        this.setState({
+          web3: results.web3
+        })
+        console.log(results.web3)
+        // Instantiate contract once web3 provided.
+        this.instantiateContract()
       })
-
-      // Instantiate contract once web3 provided.
-      this.instantiateContract()
-    })
-    .catch(() => {
-      console.log('Error finding web3.')
-    })
+      .catch(() => {
+        console.log('Error finding web3.')
+      })
   }
 
   instantiateContract() {
@@ -44,25 +44,26 @@ class App extends Component {
      */
 
     const contract = require('truffle-contract')
-    const simpleStorage = contract(SimpleStorageContract)
-    simpleStorage.setProvider(this.state.web3.currentProvider)
+    const contractForDifference = contract(ContractForDifference)
+    contractForDifference.setProvider(this.state.web3.currentProvider)
 
     // Declaring this for later so we can chain functions on SimpleStorage.
-    var simpleStorageInstance
+    var contractForDifferenceInstance
 
     // Get accounts.
     this.state.web3.eth.getAccounts((error, accounts) => {
-      simpleStorage.deployed().then((instance) => {
-        simpleStorageInstance = instance
+      contractForDifference.deployed().then((instance) => {
+        contractForDifferenceInstance = instance
 
         // Stores a given value, 5 by default.
-        return simpleStorageInstance.set(5, {from: accounts[0]})
-      }).then((result) => {
+        //   return contractForDifferenceInstance.set(5, {from: accounts[0]})
+        // }).then((result) => {
         // Get the value from the contract to prove it worked.
-        return simpleStorageInstance.get.call(accounts[0])
+        return contractForDifferenceInstance.owner.call(accounts[0])
       }).then((result) => {
         // Update state with the result.
-        return this.setState({ storageValue: result.c[0] })
+        console.log(JSON.stringify(result));
+        return this.setState({ owner: result })
       })
     })
   }
@@ -71,19 +72,35 @@ class App extends Component {
     return (
       <div className="App">
         <nav className="navbar pure-menu pure-menu-horizontal">
-            <a href="#" className="pure-menu-heading pure-menu-link">Truffle Box</a>
+          <a href="#" className="pure-menu-heading pure-menu-link">Contract For Difference</a>
         </nav>
 
         <main className="container">
+          <h1>Contract properties:</h1>
           <div className="pure-g">
-            <div className="pure-u-1-1">
-              <h1>Good to Go!</h1>
-              <p>Your Truffle Box is installed and ready.</p>
-              <h2>Smart Contract Example</h2>
-              <p>If your contracts compiled and migrated successfully, below will show a stored value of 5 (by default).</p>
-              <p>Try changing the value stored on <strong>line 59</strong> of App.js.</p>
-              <p>The stored value is: {this.state.storageValue}</p>
+            <div className="pure-u-1">
+              <table className="pure-table pure-table-bordered">
+                <thead>
+                  <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Web3 version</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Contract owner</td>
+                    <td>{this.state.owner}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+            <div className="pure-u-1-3"><p>Pure CSS column 1</p></div>
+            <div className="pure-u-1-3"><p>Pure CSS column 2</p></div>
+            <div className="pure-u-1-3"><p>Pure CSS column 3</p></div>
           </div>
         </main>
       </div>
