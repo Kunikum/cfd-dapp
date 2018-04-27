@@ -20,10 +20,10 @@ contract ContractForDifference is AssetPriceOracle {
         uint256 contractEndBlock; // in Unix time
     }
 
-    int256 leverage = 5;
+    int256 public leverage = 5;
 
-    mapping(uint256 => Cfd) private contracts;
-    uint256                 private numberOfContracts;
+    mapping(uint256 => Cfd) public contracts;
+    uint256                 public numberOfContracts;
 
     event LogMakeCfd (
     uint256 indexed CfdId, 
