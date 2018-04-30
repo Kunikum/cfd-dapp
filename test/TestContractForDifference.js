@@ -25,19 +25,21 @@ contract('ContractForDifference', (accounts) => {
                { from: makerPaymentAddress, value: paymentAmount }
         );
 
-        const returnedCfd = await cfdInstance.getCfd.call(0);
+        const cfd = await cfdInstance.getCfd.call(0);
 
         // Validate event log
         assert.equal(makeCfdResp.logs[0].event, 'LogMakeCfd', "Could not find expected event log"); // TODO: test the log fields
         
         // Validate contract data
-        assert.equal(returnedCfd[0], makerAddress, "returned makerAddress does not match passed value.");
-        assert.equal(returnedCfd[1].toNumber(), makerPosition, "returned makerPosition does not match passed value.");
-        assert.equal(returnedCfd[2], 0, "returned takerAddress is not 0.");
-        assert.equal(returnedCfd[3].toNumber(), 0, "returned takerposition is not 0.");
-        assert.equal(returnedCfd[4].toNumber(), paymentAmount, "returned paymentAmount does not match passed value.");
-        assert.equal(returnedCfd[5].toNumber(), 0, "returned contractStartTime is not 0.");
-        assert.equal(returnedCfd[6].toNumber(), contractEndBlock, "returned contractEndTime does not match passed value.");
+        assert.equal(cfd[0], makerAddress, "returned makerAddress does not match passed value.");
+        assert.equal(cfd[1].toNumber(), makerPosition, "returned makerPosition does not match passed value.");
+        assert.equal(cfd[2], 0, "returned takerAddress is not 0.");
+        assert.equal(cfd[3].toNumber(), 0, "returned takerposition is not 0.");
+        assert.equal(cfd[4].toNumber(), paymentAmount, "returned paymentAmount does not match passed value.");
+        assert.equal(cfd[5].toNumber(), 0, "returned contractStartTime is not 0.");
+        assert.equal(cfd[6].toNumber(), contractEndBlock, "returned contractEndTime does not match passed value.");
+        assert.equal(cfd[7], false, "isTaken should be false.");
+        assert.equal(cfd[8], false, "isSettled should be false.");
     });
 
     it("...should take a CFD and update its values.", async () => {        
@@ -62,6 +64,8 @@ contract('ContractForDifference', (accounts) => {
         assert.equal(cfd[4].toNumber(), paymentAmount, "returned unexpected paymentAmount.");
         assert.equal(cfd[5].toNumber(), takeCfdResp.receipt.blockNumber, "returned contractStartBlock is not the current block.");
         assert.equal(cfd[6].toNumber(), contractEndBlock, "returned unexpected contractEndTime.");
+        assert.equal(cfd[7], true, "isTaken should be true.");
+        assert.equal(cfd[8], false, "isSettled should be false.");
     });
 
     /**

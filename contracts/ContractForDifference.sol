@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
 import "./AssetPriceOracle.sol";
 
@@ -18,6 +18,10 @@ contract ContractForDifference is AssetPriceOracle {
         uint256 amount; // in Wei.
         uint256 contractStartBlock; // in Unix time
         uint256 contractEndBlock; // in Unix time
+
+        // CFD state variables
+        bool isTaken;
+        bool isSettled;
     }
 
     int256 public leverage = 5;
@@ -60,10 +64,6 @@ contract ContractForDifference is AssetPriceOracle {
         int256 intValue
     );
 
-    function constructor() public {
-        
-    }
-
     function makeCfd(
         address  makerAddress,
         Position makerPosition,
@@ -99,15 +99,19 @@ contract ContractForDifference is AssetPriceOracle {
         ) 
         public 
         view 
-        returns (address makerAddress, Position makerPosition, address takerAddress, Position takerPosition, uint256 amount, uint256 startTime, uint256 endTime) {
+        returns (address makerAddress, Position makerPosition, address takerAddress, Position takerPosition, uint256 amount, uint256 startTime, uint256 endTime, bool isTaken, bool isSettled)
+        {
+        Cfd cfd = contracts[CfdId];
         return (
-            contracts[CfdId].maker.addr,
-            contracts[CfdId].maker.position,
-            contracts[CfdId].taker.addr,
-            contracts[CfdId].taker.position,
-            contracts[CfdId].amount,
-            contracts[CfdId].contractStartBlock,
-            contracts[CfdId].contractEndBlock
+            cfd.maker.addr,
+            cfd.maker.position,
+            cfd.taker.addr,
+            cfd.taker.position,
+            cfd.amount,
+            cfd.contractStartBlock,
+            cfd.contractEndBlock,
+            cfd.isTaken,
+            cfd.isSettled
         );
     }
 
@@ -117,17 +121,20 @@ contract ContractForDifference is AssetPriceOracle {
         public
         payable
         returns (bool success) {
-        Cfd storage cfd = contracts[CfdId];
+        Cfd cfd = contracts[CfdId];
         
-        require(cfd.maker.addr != address(0));        // Contract must have a maker,
-        require(cfd.taker.addr == address(0));        // and no taker.
-        require(msg.value == cfd.amount);             // Takers deposit must match makers deposit.
-        require(takerAddress != address(0));          // Taker must provide a non-zero address.
-        require(block.number < cfd.contractEndBlock); // Taker must take contract before end block.
+        require(cfd.isTaken != true);                  // Contract must not be taken.
+        require(cfd.isSettled != true);                // Contract must not be settled.
+        require(cfd.maker.addr != address(0));         // Contract must have a maker,
+        require(cfd.taker.addr == address(0));         // and no taker.
+        require(msg.value == cfd.amount);              // Takers deposit must match makers deposit.
+        require(takerAddress != address(0));           // Taker must provide a non-zero address.
+        require(block.number <= cfd.contractEndBlock); // Taker must take contract before end block.
 
         cfd.taker.addr = takerAddress;
         cfd.taker.position = cfd.maker.position == Position.Long ? Position.Short : Position.Long; // Make taker position the inverse of maker position
         cfd.contractStartBlock = block.number;
+        cfd.isTaken = true;
 
         emit LogTakeCfd(
             CfdId,
@@ -148,11 +155,14 @@ contract ContractForDifference is AssetPriceOracle {
         )
         public
         returns (bool success) {
-        Cfd storage cfd = contracts[CfdId];
+        Cfd cfd = contracts[CfdId];
 
-        require(cfd.maker.addr != address(0));        // Contract must have a maker.
-        require(cfd.taker.addr != address(0));        // Contract must have a taker.
-        // require(cfd.contractEndBlock < block.number); // Contract must have met its end time.
+        require(cfd.contractEndBlock <= block.number); // Contract must have met its end time.
+        require(!cfd.isSettled);                       // Contract must not be settled already.
+        require(cfd.isTaken);                          // Contract must be taken.
+        require(cfd.maker.addr != address(0));         // Contract must have a maker address.
+        require(cfd.taker.addr != address(0));         // Contract must have a taker address.
+
 
         // Payout settlements to maker and taker
         uint256 makerSettlement = getSettlementAmount(CfdId, cfd.maker.position);
@@ -163,6 +173,9 @@ contract ContractForDifference is AssetPriceOracle {
         if (takerSettlement > 0) {
             cfd.taker.addr.transfer(takerSettlement);
         }
+
+        // Mark contract as settled.
+        cfd.isSettled = true;
 
         emit LogCfdSettled (
             CfdId, 
