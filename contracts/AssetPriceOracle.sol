@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
 import "./ds-auth/auth.sol"; // https://dappsys.readthedocs.io/en/latest/ds_auth.html
 
