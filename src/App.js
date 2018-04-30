@@ -13,6 +13,7 @@ class App extends Component {
 
     this.state = {
       web3: null,
+      currentBlockNumber: 0,
       cfdInstance: null,
       accounts: 'Loading...',
       owner: 'Loading...',
@@ -28,25 +29,34 @@ class App extends Component {
   async componentDidMount() {
     const cfdInstance = await getCfdInstance();
 
-    let contracts = [];
-
     this.setState({
       web3: web3,
+      currentBlockNumber: await web3.eth.getBlockNumber(),
       cfdInstance: cfdInstance,
       accounts: await web3.eth.getAccounts(),
       owner: await cfdInstance.owner.call(),
       numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString()
     });
-    
+
     // Get array of array contracts and translate them to array of objects
-    for(var i=0; i < this.state.numberOfContracts; i++){
-      const contract = await cfdInstance.getCfd.call(i)
+    let contracts = [];
+    for (var i = 0; i < this.state.numberOfContracts; i++) {
+      const contract = await cfdInstance.getCfd.call(i);
       contracts.push({
-        maker: {addr: contract[0], position: contract[1].toString() === '0' ? 'Long' : 'Short'},
-        taker: {addr: contract[2] === '0x0000000000000000000000000000000000000000' ? '' : contract[2], position: contract[2] === '0x0000000000000000000000000000000000000000' ? '' : (contract[3].toString() === '0' ? 'Long' : 'Short')},
+        id: i,
+        maker: {
+          addr: contract[0],
+          position: contract[1].toString() === '0' ? 'Long' : 'Short'
+        },
+        taker: {
+          addr: contract[2] === '0x0000000000000000000000000000000000000000' ? '' : contract[2],
+          position: contract[2] === '0x0000000000000000000000000000000000000000' ? '' : (contract[3].toString() === '0' ? 'Long' : 'Short')
+        },
         amount: web3.utils.fromWei(contract[4].toString(), 'ether'),
-        contractStartBlock: contract[5].toString(),
-        contractEndBlock: contract[6].toString()
+        contractStartBlock: contract[5].toNumber(),
+        contractEndBlock: contract[6].toNumber(),
+        isTaken: contract[7],
+        isSettled: contract[8]
       });
     }
     this.setState({
@@ -57,7 +67,7 @@ class App extends Component {
   onMakeCfd = async (event) => {
     event.preventDefault();
 
-    this.setState({ message: 'Waiting for Make CFD Transaction...' });
+    this.setState({ message: 'Waiting for Make CFD Transaction to confirm...' });
 
     await this.state.cfdInstance.makeCfd(
       this.state.accounts[0],
@@ -67,37 +77,76 @@ class App extends Component {
     );
 
     this.setState({
-      message: 'Make CFD Transaction successful!',
+      message: '\'Make CFD\' Transaction successful!',
       makePosition: 0,
       makeAmountEther: ''
     });
+  };
 
-  }
+  onTakeCfd = async (CfdId, event) => {
+    event.preventDefault();
+
+    this.setState({ message: 'Waiting for Take CFD Transaction to confirm...' });
+    // console.log('takeCfd gas estimate:', await this.state.cfdInstance.takeCfd.estimateGas(CfdId, this.state.accounts[0]));
+    await this.state.cfdInstance.takeCfd(
+      CfdId,
+      this.state.accounts[0],
+      { value: web3.utils.toWei(this.state.contracts[CfdId].amount, 'ether'), from: this.state.accounts[0] }
+    );
+
+    this.setState({
+      message: '\'Take CFD\' Transaction successful!'
+    });
+  };
+
+  onSettleCfd = async (cfdId, event) => {
+    event.preventDefault();
+
+    this.setState({ message: 'Waiting for Settle CFD Transaction to confirm...' });
+
+    await this.state.cfdInstance.settleCfd(
+      cfdId,
+      { from: this.state.accounts[0] }
+    );
+
+    this.setState({
+      message: '\'Settle CFD\' Transaction successful!'
+    });
+  };
 
   render() {
     const ContractRow = (props) => {
+      const disableTake = props.data.isTaken;
+      const disableSettle = this.state.currentBlockNumber+1 < props.data.contractEndBlock || props.data.isSettled;
       return (
         <tr>
           <td>
-            { props.data.maker.addr }
+            {props.data.id}
           </td>
           <td>
-            { props.data.maker.position }
+            {props.data.maker.addr}
           </td>
           <td>
-            { props.data.taker.addr }
+            {props.data.maker.position}
           </td>
           <td>
-            { props.data.taker.position }
+            {props.data.taker.addr}
           </td>
           <td>
-            { props.data.amount } Ether
+            {props.data.taker.position}
           </td>
           <td>
-            { props.data.contractStartBlock }
+            {props.data.amount}
           </td>
           <td>
-            { props.data.contractEndBlock }
+            {props.data.contractStartBlock}
+          </td>
+          <td>
+            {props.data.contractEndBlock}
+          </td>
+          <td>
+            <button onClick={(e) => this.onTakeCfd(props.data.id, e)} className="pure-button" disabled={disableTake}>Take</button>
+            <button onClick={(e) => this.onSettleCfd(props.data.id, e)} className="pure-button" disabled={disableSettle}>Settle</button>
           </td>
         </tr>
       );
@@ -122,10 +171,6 @@ class App extends Component {
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Web3 version</td>
-                    <td>{web3.version}</td>
-                  </tr>
-                  <tr>
                     <td>Web3 Selected Wallet</td>
                     <td>{this.state.accounts}</td>
                   </tr>
@@ -134,33 +179,19 @@ class App extends Component {
                     <td>{this.state.owner}</td>
                   </tr>
                   <tr>
+                    <td>Current Block</td>
+                    <td>{this.state.currentBlockNumber}</td>
+                  </tr>
+                  <tr>
                     <td>Number Of Contracts</td>
                     <td>{this.state.numberOfContracts}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
+
             <div className="pure-u-1">
-            <h2>Contract list</h2>
-              <table className="pure-table pure-table-bordered">
-                <thead>
-                  <tr>
-                    <th>Maker Address</th>
-                    <th>MPosition</th>
-                    <th>Taker Address</th>
-                    <th>TPosition</th>
-                    <th>Deposit</th>
-                    <th>Start Block</th>
-                    <th>End Block</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {this.state.contracts.map(contract => {return <ContractRow data={contract} />})}
-                </tbody>
-              </table>
-            </div>
-            <div className="pure-u-1-2">
-              <form onSubmit={this.onMakeCfd}>
+              <form onSubmit={this.onMakeCfd} className="pure-form pure-form-stacked">
                 <h2>Make Contract</h2>
                 <p>
                   <label>Position: </label>
@@ -186,10 +217,31 @@ class App extends Component {
                     onChange={event => this.setState({ makeEndBlock: event.target.value })}
                   />
                 </p>
-                <button>Make Contract for Difference</button>
+                <button className="pure-button pure-button-primary">Make Contract for Difference</button>
               </form>
             </div>
-            <div className="pure-u-1-2"></div>
+
+            <div className="pure-u-1">
+              <h2>Contract list</h2>
+              <table className="pure-table pure-table-bordered">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Maker Address</th>
+                    <th>MPosition</th>
+                    <th>Taker Address</th>
+                    <th>TPosition</th>
+                    <th>Deposit (Ether)</th>
+                    <th>Start Block</th>
+                    <th>End Block</th>
+                    <th>Options</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {this.state.contracts.map(contract => { return <ContractRow data={contract} key={contract.id} /> }) /* 'key' is just to stop the React warning of missing unique key */}
+                </tbody>
+              </table>
+            </div>
 
             <div className="pure-u-1">
               <hr />
