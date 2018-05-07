@@ -32,7 +32,7 @@ contract ContractForDifference is AssetPriceOracle {
     event LogMakeCfd (
     uint256 indexed CfdId, 
     address indexed makerAddress, 
-    Position makerPosition,
+    Position indexed makerPosition,
     uint256 amount,
     uint256 contractEndBlock);
 
@@ -55,6 +55,8 @@ contract ContractForDifference is AssetPriceOracle {
     uint256 amount,
     uint256 contractStartBlock,
     uint256 contractEndBlock,
+    uint256 startPrice,
+    uint256 endPrice,
     uint256 makerSettlement,
     uint256 takerSettlement);
 
@@ -101,7 +103,7 @@ contract ContractForDifference is AssetPriceOracle {
         view 
         returns (address makerAddress, Position makerPosition, address takerAddress, Position takerPosition, uint256 amount, uint256 startTime, uint256 endTime, bool isTaken, bool isSettled)
         {
-        Cfd cfd = contracts[CfdId];
+        Cfd storage cfd = contracts[CfdId];
         return (
             cfd.maker.addr,
             cfd.maker.position,
@@ -121,7 +123,7 @@ contract ContractForDifference is AssetPriceOracle {
         public
         payable
         returns (bool success) {
-        Cfd cfd = contracts[CfdId];
+        Cfd storage cfd = contracts[CfdId];
         
         require(cfd.isTaken != true);                  // Contract must not be taken.
         require(cfd.isSettled != true);                // Contract must not be settled.
@@ -155,7 +157,7 @@ contract ContractForDifference is AssetPriceOracle {
         )
         public
         returns (bool success) {
-        Cfd cfd = contracts[CfdId];
+        Cfd storage cfd = contracts[CfdId];
 
         require(cfd.contractEndBlock <= block.number); // Contract must have met its end time.
         require(!cfd.isSettled);                       // Contract must not be settled already.
@@ -186,6 +188,8 @@ contract ContractForDifference is AssetPriceOracle {
             cfd.amount,
             cfd.contractStartBlock,
             cfd.contractEndBlock,
+            assetPriceRecords[cfd.contractStartBlock], // startPrice
+            assetPriceRecords[cfd.contractEndBlock], // endPrice
             makerSettlement,
             takerSettlement
         );
@@ -203,17 +207,21 @@ contract ContractForDifference is AssetPriceOracle {
         require(position == Position.Long || position == Position.Short);
 
         Cfd storage cfd = contracts[CfdId];
-        uint256 entryPrice = getAssetPrice(cfd.contractStartBlock);
-        uint256 exitPrice = getAssetPrice(cfd.contractEndBlock);
+        int256 entryPrice = int256(getAssetPrice(cfd.contractStartBlock));
+        int256 exitPrice = int256(getAssetPrice(cfd.contractEndBlock));
         
-        int256 priceDiff = position == Position.Long ? int256(exitPrice - entryPrice) : int256(entryPrice - exitPrice);
-        int256 settlement = int256(cfd.amount) + priceDiff * leverage;
+        if (entryPrice == exitPrice) {return cfd.amount;} // If price didn't change, settle for equal amount to long and short.
+
+        int256 amount = int256(cfd.amount);
+
+        int256 priceDiff = position == Position.Long ? (exitPrice - entryPrice) : (entryPrice - exitPrice); // Price diff calc depends on which position we are calculating settlement for.
+        int256 settlement = amount + priceDiff * amount * leverage / entryPrice;
         if (settlement < 0) {
             return 0; // Calculated settlement was negative, but a party can't be charged more than his deposit.
-        } else if (settlement > int(cfd.amount * 2)) {
+        } else if (settlement > amount * 2) {
             return cfd.amount * 2; // Calculated settlement was more than the total deposits, so settle for the total deposits.
         } else {
-            return uint(settlement);
+            return uint256(settlement); // Settlement was more than zero and less than sum of deposit amounts, so we can pay it out as is.
         }
     }
 }
