@@ -134,7 +134,8 @@ contract ContractForDifference is AssetPriceOracle {
         require(block.number <= cfd.contractEndBlock); // Taker must take contract before end block.
 
         cfd.taker.addr = takerAddress;
-        cfd.taker.position = cfd.maker.position == Position.Long ? Position.Short : Position.Long; // Make taker position the inverse of maker position
+        // Make taker position the inverse of maker position
+        cfd.taker.position = cfd.maker.position == Position.Long ? Position.Short : Position.Long;
         cfd.contractStartBlock = block.number;
         cfd.isTaken = true;
 
@@ -214,7 +215,8 @@ contract ContractForDifference is AssetPriceOracle {
 
         int256 amount = int256(cfd.amount);
 
-        int256 priceDiff = position == Position.Long ? (exitPrice - entryPrice) : (entryPrice - exitPrice); // Price diff calc depends on which position we are calculating settlement for.
+        // Price diff calc depends on which position we are calculating settlement for.
+        int256 priceDiff = position == Position.Long ? (exitPrice - entryPrice) : (entryPrice - exitPrice);
         int256 settlement = amount + priceDiff * amount * leverage / entryPrice;
         if (settlement < 0) {
             return 0; // Calculated settlement was negative, but a party can't be charged more than his deposit.
