@@ -11,13 +11,13 @@ contract AssetPriceOracle is DSAuth {
     uint256[] public blocksWithPrice;
 
     event AssetPriceRecorded(
-        uint256 blockNumber,
-        uint256 price
+        uint256 indexed blockNumber,
+        uint256 indexed price
     );
 
     event AssetPriceUpdated(
-        uint256 blockNumber,
-        uint256 price
+        uint256 indexed blockNumber,
+        uint256 indexed price
     );
 
     constructor() public {
