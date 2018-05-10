@@ -75,6 +75,7 @@ class CfdDashboard extends Component {
 
     console.log('cfdInstance.makeCfd.estimateGas', await this.state.cfdInstance.makeCfd.estimateGas(
       this.state.accounts[0],
+      0,
       this.state.makePosition,
       this.state.makeEndBlock,
       { value: web3.utils.toWei(this.state.makeAmountEther, 'ether'), from: this.state.accounts[0] }
@@ -82,6 +83,7 @@ class CfdDashboard extends Component {
 
     await this.state.cfdInstance.makeCfd(
       this.state.accounts[0],
+      0,
       this.state.makePosition,
       this.state.makeEndBlock,
       { value: web3.utils.toWei(this.state.makeAmountEther, 'ether'), from: this.state.accounts[0] }

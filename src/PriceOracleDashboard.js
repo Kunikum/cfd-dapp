@@ -34,24 +34,22 @@ class PriceOracleDashboard extends Component {
       apoInstance: apoInstance,
       accounts: await web3.eth.getAccounts(),
       owner: await apoInstance.owner.call(),
-
     });
 
     // Get price quotes and translate them to array of objects
     let priceRecordObjects = [];
-    const numberOfblocksWithPrice = await apoInstance.getNumberOfBlocksWithPrice.call();
-    for (let i = numberOfblocksWithPrice - 1; i >= 0; i--) {
-      const blockNumber = await apoInstance.blocksWithPrice.call(i);
-      const priceRecord = await apoInstance.assetPriceRecords.call(blockNumber);
-      priceRecordObjects.push({
-        id: i,
-        blockNumber: blockNumber,
-        price: new BigNumber(priceRecord).dividedBy('1e18')
+
+    apoInstance.AssetPriceRecorded({}, { fromBlock: 0, toBlock: 'latest' }).get(((error, result) => {
+      result.forEach(assetPrice => {
+        const assetId = assetPrice.args.assetId;
+        const blockNumber = assetPrice.args.blockNumber;
+        const price = new BigNumber(assetPrice.args.price).dividedBy('1e18')
+        priceRecordObjects.push({ assetId, blockNumber, price });
       });
       this.setState({
         priceRecords: priceRecordObjects
       });
-    }
+    }));
   }
 
   registerPrice = async (event) => {
@@ -60,6 +58,7 @@ class PriceOracleDashboard extends Component {
     this.setState({ message: 'Waiting for Register Price Transaction to confirm...' });
 
     await this.state.apoInstance.recordAssetPrice(
+      0,
       this.state.registerBlockNo,
       new BigNumber(this.state.registerPrice).multipliedBy('1e18').toFixed(0),
       { from: this.state.accounts[0] }
@@ -77,7 +76,7 @@ class PriceOracleDashboard extends Component {
       return (
         <tr>
           <td>
-            {props.data.id}
+            {props.data.assetId.toString()}
           </td>
           <td>
             {props.data.blockNumber.toString()}
@@ -97,13 +96,13 @@ class PriceOracleDashboard extends Component {
           <table className="pure-table pure-table-bordered">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Asset ID</th>
                 <th>Block number</th>
                 <th>Price Quote</th>
               </tr>
             </thead>
             <tbody>
-              {this.state.priceRecords.map(priceRecord => { return <PriceRecordRow data={priceRecord} key={priceRecord.id} /> }) /* 'key' is just to stop the React warning of missing unique key */}
+              {this.state.priceRecords.map(record => { return <PriceRecordRow data={record} key={record.assetId.toString() + record.blockNumber.toString()} /> }) /* 'key' is just to stop the React warning of missing unique key */}
             </tbody>
           </table>
         </div>

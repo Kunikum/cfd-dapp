@@ -14,7 +14,8 @@ contract ContractForDifference {
     struct Cfd {
         Party maker;
         Party taker;
-        
+
+        uint256 assetId;
         uint256 amount; // in Wei.
         uint256 contractStartBlock; // in Unix time
         uint256 contractEndBlock; // in Unix time
@@ -72,9 +73,10 @@ contract ContractForDifference {
     }
 
     function makeCfd(
-        address  makerAddress,
+        address makerAddress,
+        uint256 assetId,
         Position makerPosition,
-        uint256  contractEndBlock
+        uint256 contractEndBlock
         )
         public
         payable
@@ -195,8 +197,8 @@ contract ContractForDifference {
             cfd.amount,
             cfd.contractStartBlock,
             cfd.contractEndBlock,
-            priceOracle.getAssetPrice(cfd.contractStartBlock), // startPrice
-            priceOracle.getAssetPrice(cfd.contractEndBlock), // endPrice
+            priceOracle.getAssetPrice(cfd.assetId, cfd.contractStartBlock), // startPrice
+            priceOracle.getAssetPrice(cfd.assetId, cfd.contractEndBlock), // endPrice
             makerSettlement,
             takerSettlement
         );
@@ -214,8 +216,8 @@ contract ContractForDifference {
         require(position == Position.Long || position == Position.Short);
 
         Cfd storage cfd = contracts[CfdId];
-        int256 entryPrice = int256(priceOracle.getAssetPrice(cfd.contractStartBlock));
-        int256 exitPrice = int256(priceOracle.getAssetPrice(cfd.contractEndBlock));
+        int256 entryPrice = int256(priceOracle.getAssetPrice(cfd.assetId, cfd.contractStartBlock));
+        int256 exitPrice = int256(priceOracle.getAssetPrice(cfd.assetId, cfd.contractEndBlock));
         
         if (entryPrice == exitPrice) {return cfd.amount;} // If price didn't change, settle for equal amount to long and short.
 
