@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import web3 from './utils/web3'
-import getCfdInstance from './ContractForDifference.js'
+import { getCfdInstance, getApoInstance } from './utils/ContractLoader'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -16,7 +16,7 @@ class CfdDashboard extends Component {
       currentBlockNumber: 0,
       cfdInstance: null,
       accounts: 'Loading...',
-      owner: 'Loading...',
+      oracleOwner: 'Loading...',
       numberOfContracts: 'Loading...',
       contracts: [],
       makePosition: '0',
@@ -28,21 +28,24 @@ class CfdDashboard extends Component {
 
   async componentDidMount() {
     const cfdInstance = await getCfdInstance();
+    const apoInstance = await getApoInstance();
 
     this.setState({
       web3: web3,
       currentBlockNumber: await web3.eth.getBlockNumber(),
       cfdInstance: cfdInstance,
       accounts: await web3.eth.getAccounts(),
-      owner: await cfdInstance.owner.call(),
+      oracleOwner: await apoInstance.owner.call(),
       numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString()
     });
 
-    // Get array of array contracts and translate them to array of objects
+    // Get array of array contracts and translate them to array of objects.
+    // We do this in the order of highest to lowest ID, so we get newest contracts loaded first.
     let contracts = [];
-    for (var i = 0; i < this.state.numberOfContracts; i++) {
+    for (let i = this.state.numberOfContracts - 1; i >= 0; i--) {
       const contract = await cfdInstance.getCfd.call(i);
-      contracts.push({
+
+      contracts.unshift({
         id: i,
         maker: {
           addr: contract[0],
@@ -58,16 +61,24 @@ class CfdDashboard extends Component {
         isTaken: contract[7],
         isSettled: contract[8]
       });
+
+      this.setState({
+        contracts: contracts
+      });
     }
-    this.setState({
-      contracts: contracts
-    });
   }
 
   onMakeCfd = async (event) => {
     event.preventDefault();
 
     this.setState({ message: 'Waiting for Make CFD Transaction to confirm...' });
+
+    console.log('cfdInstance.makeCfd.estimateGas', await this.state.cfdInstance.makeCfd.estimateGas(
+      this.state.accounts[0],
+      this.state.makePosition,
+      this.state.makeEndBlock,
+      { value: web3.utils.toWei(this.state.makeAmountEther, 'ether'), from: this.state.accounts[0] }
+    ));
 
     await this.state.cfdInstance.makeCfd(
       this.state.accounts[0],
@@ -83,24 +94,34 @@ class CfdDashboard extends Component {
     });
   };
 
-  onTakeCfd = async (CfdId, event) => {
+  onTakeCfd = async (cfdId, event) => {
     event.preventDefault();
 
-    this.setState({ message: 'Waiting for Take CFD Transaction to confirm...' });
-    // console.log('takeCfd gas estimate:', await this.state.cfdInstance.takeCfd.estimateGas(CfdId, this.state.accounts[0]));
-    await this.state.cfdInstance.takeCfd(
-      CfdId,
+    const cfd = this.state.contracts.find((c) => { return c.id === cfdId; });
+
+    console.log('cfdInstance.takeCfd.estimateGas', await this.state.cfdInstance.takeCfd.estimateGas(
+      cfdId,
       this.state.accounts[0],
-      { value: web3.utils.toWei(this.state.contracts[CfdId].amount, 'ether'), from: this.state.accounts[0] }
+      { value: web3.utils.toWei(cfd.amount, 'ether'), from: this.state.accounts[0] }
+    ));
+
+    this.setState({ message: 'Waiting for Take CFD Transaction to confirm...' });
+    await this.state.cfdInstance.takeCfd(
+      cfdId,
+      this.state.accounts[0],
+      { value: web3.utils.toWei(cfd.amount, 'ether'), from: this.state.accounts[0] }
     );
 
-    this.setState({
-      message: '\'Take CFD\' Transaction successful!'
-    });
+    this.setState({ message: '\'Take CFD\' Transaction successful!' });
   };
 
   onSettleCfd = async (cfdId, event) => {
     event.preventDefault();
+
+    console.log('cfdInstance.settleCfd.estimateGas', await this.state.cfdInstance.settleCfd.estimateGas(
+      cfdId,
+      { from: this.state.accounts[0] }
+    ));
 
     this.setState({ message: 'Waiting for Settle CFD Transaction to confirm...' });
 
@@ -109,15 +130,13 @@ class CfdDashboard extends Component {
       { from: this.state.accounts[0] }
     );
 
-    this.setState({
-      message: '\'Settle CFD\' Transaction successful!'
-    });
+    this.setState({ message: '\'Settle CFD\' Transaction successful!' });
   };
 
   render() {
     const ContractRow = (props) => {
-      const disableTake = props.data.isTaken;
-      const disableSettle = this.state.currentBlockNumber + 1 < props.data.contractEndBlock || props.data.isSettled;
+      const disableTake = props.data.isTaken || this.state.currentBlockNumber >= props.data.contractEndBlock;
+      const disableSettle = !props.data.isTaken || props.data.isSettled || this.state.currentBlockNumber < props.data.contractEndBlock - 1;
       return (
         <tr>
           <td>
@@ -139,7 +158,7 @@ class CfdDashboard extends Component {
             {props.data.amount}
           </td>
           <td>
-            {props.data.contractStartBlock}
+            {props.data.contractStartBlock !== 0 ? props.data.contractStartBlock : ''}
           </td>
           <td>
             {props.data.contractEndBlock}
@@ -170,7 +189,7 @@ class CfdDashboard extends Component {
               </tr>
               <tr>
                 <td>Contract Owner</td>
-                <td>{this.state.owner}</td>
+                <td>{this.state.oracleOwner}</td>
               </tr>
               <tr>
                 <td>Current Block</td>
@@ -232,7 +251,10 @@ class CfdDashboard extends Component {
               </tr>
             </thead>
             <tbody>
-              {this.state.contracts.map(contract => { return <ContractRow data={contract} key={contract.id} /> }) /* 'key' is just to stop the React warning of missing unique key */}
+              {/* '.slice(0)' is used to create a shallow copy, so '.reverse()' does not change the original data
+                *  'key' value is just to stop the React warning of missing unique key 
+                */ }
+              {this.state.contracts.slice(0).reverse().map(contract => { return <ContractRow data={contract} key={contract.id} /> })}
             </tbody>
           </table>
         </div>

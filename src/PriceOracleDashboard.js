@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import web3 from './utils/web3'
-import getCfdInstance from './ContractForDifference.js'
+import { getApoInstance } from './utils/ContractLoader'
 import { BigNumber } from 'bignumber.js';
 
 import './css/oswald.css'
@@ -15,7 +15,7 @@ class PriceOracleDashboard extends Component {
     this.state = {
       web3: null,
       currentBlockNumber: 0,
-      cfdInstance: null,
+      apoInstance: null,
       accounts: 'Loading',
       owner: 'Loading...',
       priceRecords: [],
@@ -26,23 +26,23 @@ class PriceOracleDashboard extends Component {
   }
 
   async componentDidMount() {
-    const cfdInstance = await getCfdInstance();
+    const apoInstance = await getApoInstance();
 
     this.setState({
       web3: web3,
       currentBlockNumber: await web3.eth.getBlockNumber(),
-      cfdInstance: cfdInstance,
+      apoInstance: apoInstance,
       accounts: await web3.eth.getAccounts(),
-      owner: await cfdInstance.owner.call(),
+      owner: await apoInstance.owner.call(),
 
     });
 
     // Get price quotes and translate them to array of objects
     let priceRecordObjects = [];
-    const numberOfblocksWithPrice = await cfdInstance.getNumberOfBlocksWithPrice.call();
-    for (let i = numberOfblocksWithPrice-1; i >= 0; i--) {
-      const blockNumber = await cfdInstance.blocksWithPrice.call(i);
-      const priceRecord = await cfdInstance.assetPriceRecords.call(blockNumber);
+    const numberOfblocksWithPrice = await apoInstance.getNumberOfBlocksWithPrice.call();
+    for (let i = numberOfblocksWithPrice - 1; i >= 0; i--) {
+      const blockNumber = await apoInstance.blocksWithPrice.call(i);
+      const priceRecord = await apoInstance.assetPriceRecords.call(blockNumber);
       priceRecordObjects.push({
         id: i,
         blockNumber: blockNumber,
@@ -59,7 +59,7 @@ class PriceOracleDashboard extends Component {
 
     this.setState({ message: 'Waiting for Register Price Transaction to confirm...' });
 
-    await this.state.cfdInstance.recordAssetPrice(
+    await this.state.apoInstance.recordAssetPrice(
       this.state.registerBlockNo,
       new BigNumber(this.state.registerPrice).multipliedBy('1e18').toFixed(0),
       { from: this.state.accounts[0] }

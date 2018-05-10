@@ -2,7 +2,7 @@ pragma solidity ^0.4.23;
 
 import "./AssetPriceOracle.sol";
 
-contract ContractForDifference is AssetPriceOracle {
+contract ContractForDifference {
 
     enum Position { Long, Short }
     
@@ -25,6 +25,7 @@ contract ContractForDifference is AssetPriceOracle {
     }
 
     int256 public leverage = 5;
+    AssetPriceOracle public priceOracle;
 
     mapping(uint256 => Cfd) public contracts;
     uint256                 public numberOfContracts;
@@ -65,6 +66,10 @@ contract ContractForDifference is AssetPriceOracle {
         uint256 uintValue,
         int256 intValue
     );
+
+    constructor(address priceOracleAddress) public {
+        priceOracle = AssetPriceOracle(priceOracleAddress);
+    }
 
     function makeCfd(
         address  makerAddress,
@@ -129,6 +134,7 @@ contract ContractForDifference is AssetPriceOracle {
         require(cfd.isSettled != true);                // Contract must not be settled.
         require(cfd.maker.addr != address(0));         // Contract must have a maker,
         require(cfd.taker.addr == address(0));         // and no taker.
+        require(takerAddress != cfd.maker.addr);       // Maker and Taker must not be the same address.
         require(msg.value == cfd.amount);              // Takers deposit must match makers deposit.
         require(takerAddress != address(0));           // Taker must provide a non-zero address.
         require(block.number <= cfd.contractEndBlock); // Taker must take contract before end block.
@@ -189,8 +195,8 @@ contract ContractForDifference is AssetPriceOracle {
             cfd.amount,
             cfd.contractStartBlock,
             cfd.contractEndBlock,
-            assetPriceRecords[cfd.contractStartBlock], // startPrice
-            assetPriceRecords[cfd.contractEndBlock], // endPrice
+            priceOracle.getAssetPrice(cfd.contractStartBlock), // startPrice
+            priceOracle.getAssetPrice(cfd.contractEndBlock), // endPrice
             makerSettlement,
             takerSettlement
         );
@@ -208,8 +214,8 @@ contract ContractForDifference is AssetPriceOracle {
         require(position == Position.Long || position == Position.Short);
 
         Cfd storage cfd = contracts[CfdId];
-        int256 entryPrice = int256(getAssetPrice(cfd.contractStartBlock));
-        int256 exitPrice = int256(getAssetPrice(cfd.contractEndBlock));
+        int256 entryPrice = int256(priceOracle.getAssetPrice(cfd.contractStartBlock));
+        int256 exitPrice = int256(priceOracle.getAssetPrice(cfd.contractEndBlock));
         
         if (entryPrice == exitPrice) {return cfd.amount;} // If price didn't change, settle for equal amount to long and short.
 
