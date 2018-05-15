@@ -9,7 +9,7 @@ module.exports = function (deployer, network) {
       await deployer.deploy(ContractForDifference, AssetPriceOracle.address);
     }
     else {
-      await deployer.deploy(AssetPriceOracle, { overwrite: false });
+      await deployer.deploy(AssetPriceOracle);
       await deployer.deploy(ContractForDifference, AssetPriceOracle.address);
     }
   })
