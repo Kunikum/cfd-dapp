@@ -35,6 +35,7 @@ contract ContractForDifference {
     uint256 indexed CfdId, 
     address indexed makerAddress, 
     Position indexed makerPosition,
+    uint256 assetId,
     uint256 amount,
     uint256 contractEndBlock);
 
@@ -44,19 +45,13 @@ contract ContractForDifference {
     Position makerPosition, 
     address indexed takerAddress, 
     Position takerPosition,
+    uint256 assetId,
     uint256 amount,
     uint256 contractStartBlock,
     uint256 contractEndBlock);
 
     event LogCfdSettled (
-    uint256 indexed CfdId, 
-    address indexed makerAddress, 
-    Position makerPosition, 
-    address indexed takerAddress, 
-    Position takerPosition,
-    uint256 amount,
-    uint256 contractStartBlock,
-    uint256 contractEndBlock,
+    uint256 indexed CfdId,
     uint256 startPrice,
     uint256 endPrice,
     uint256 makerSettlement,
@@ -88,6 +83,7 @@ contract ContractForDifference {
         uint256 contractId = numberOfContracts;
 
         contracts[contractId].maker = Party(makerAddress, makerPosition);
+        contracts[contractId].assetId = assetId;
         contracts[contractId].amount = msg.value;
         contracts[contractId].contractEndBlock = contractEndBlock;
         numberOfContracts++;
@@ -96,6 +92,7 @@ contract ContractForDifference {
             contractId,
             contracts[contractId].maker.addr,
             contracts[contractId].maker.position,
+            contracts[contractId].assetId,
             contracts[contractId].amount,
             contracts[contractId].contractEndBlock
         );
@@ -108,7 +105,7 @@ contract ContractForDifference {
         ) 
         public 
         view 
-        returns (address makerAddress, Position makerPosition, address takerAddress, Position takerPosition, uint256 amount, uint256 startTime, uint256 endTime, bool isTaken, bool isSettled)
+        returns (address makerAddress, Position makerPosition, address takerAddress, Position takerPosition, uint256 assetId, uint256 amount, uint256 startTime, uint256 endTime, bool isTaken, bool isSettled)
         {
         Cfd storage cfd = contracts[CfdId];
         return (
@@ -116,6 +113,7 @@ contract ContractForDifference {
             cfd.maker.position,
             cfd.taker.addr,
             cfd.taker.position,
+            cfd.assetId,
             cfd.amount,
             cfd.contractStartBlock,
             cfd.contractEndBlock,
@@ -153,6 +151,7 @@ contract ContractForDifference {
             cfd.maker.position,
             cfd.taker.addr,
             cfd.taker.position,
+            cfd.assetId,
             cfd.amount,
             cfd.contractStartBlock,
             cfd.contractEndBlock
@@ -174,13 +173,17 @@ contract ContractForDifference {
         require(cfd.maker.addr != address(0));         // Contract must have a maker address.
         require(cfd.taker.addr != address(0));         // Contract must have a taker address.
 
+        // Get relevant variables
+        uint256 amount = cfd.amount;
+        uint256 startPrice = priceOracle.getAssetPrice(cfd.assetId, cfd.contractStartBlock);
+        uint256 endPrice = priceOracle.getAssetPrice(cfd.assetId, cfd.contractEndBlock);
 
         // Payout settlements to maker and taker
-        uint256 makerSettlement = getSettlementAmount(CfdId, cfd.maker.position);
+        uint256 makerSettlement = getSettlementAmount(amount, startPrice, endPrice, cfd.maker.position);
         if (makerSettlement > 0) { 
             cfd.maker.addr.transfer(makerSettlement); 
         }
-        uint256 takerSettlement = getSettlementAmount(CfdId, cfd.taker.position);
+        uint256 takerSettlement = getSettlementAmount(amount, startPrice, endPrice, cfd.taker.position);
         if (takerSettlement > 0) {
             cfd.taker.addr.transfer(takerSettlement);
         }
@@ -189,16 +192,9 @@ contract ContractForDifference {
         cfd.isSettled = true;
 
         emit LogCfdSettled (
-            CfdId, 
-            cfd.maker.addr, 
-            cfd.maker.position, 
-            cfd.taker.addr, 
-            cfd.taker.position, 
-            cfd.amount,
-            cfd.contractStartBlock,
-            cfd.contractEndBlock,
-            priceOracle.getAssetPrice(cfd.assetId, cfd.contractStartBlock), // startPrice
-            priceOracle.getAssetPrice(cfd.assetId, cfd.contractEndBlock), // endPrice
+            CfdId,
+            startPrice,
+            endPrice,
             makerSettlement,
             takerSettlement
         );
@@ -207,7 +203,9 @@ contract ContractForDifference {
     }
 
     function getSettlementAmount(
-        uint256 CfdId,
+        uint256 amountUInt,
+        uint256 entryPriceUInt,
+        uint256 exitPriceUInt,
         Position position
     )
     public
@@ -215,13 +213,11 @@ contract ContractForDifference {
     returns (uint256) {
         require(position == Position.Long || position == Position.Short);
 
-        Cfd storage cfd = contracts[CfdId];
-        int256 entryPrice = int256(priceOracle.getAssetPrice(cfd.assetId, cfd.contractStartBlock));
-        int256 exitPrice = int256(priceOracle.getAssetPrice(cfd.assetId, cfd.contractEndBlock));
+        int256 entryPrice = int256(entryPriceUInt);
+        int256 exitPrice = int256(exitPriceUInt);
+        int256 amount = int256(amountUInt);
         
-        if (entryPrice == exitPrice) {return cfd.amount;} // If price didn't change, settle for equal amount to long and short.
-
-        int256 amount = int256(cfd.amount);
+        if (entryPrice == exitPrice) {return amountUInt;} // If price didn't change, settle for equal amount to long and short.
 
         // Price diff calc depends on which position we are calculating settlement for.
         int256 priceDiff = position == Position.Long ? (exitPrice - entryPrice) : (entryPrice - exitPrice);
@@ -229,7 +225,7 @@ contract ContractForDifference {
         if (settlement < 0) {
             return 0; // Calculated settlement was negative, but a party can't be charged more than his deposit.
         } else if (settlement > amount * 2) {
-            return cfd.amount * 2; // Calculated settlement was more than the total deposits, so settle for the total deposits.
+            return amountUInt * 2; // Calculated settlement was more than the total deposits, so settle for the total deposits.
         } else {
             return uint256(settlement); // Settlement was more than zero and less than sum of deposit amounts, so we can pay it out as is.
         }
