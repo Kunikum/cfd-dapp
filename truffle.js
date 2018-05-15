@@ -12,13 +12,13 @@ module.exports = {
       port: 7545,
       network_id: "*", // Match any network id
       gas: 4500000, // Current Ropsten gas limit. See https://ropsten.etherscan.io/block/3141628
-      gasPrice: 5000000000 // 5 GWei (AKA 'Shannon') - a resonable gasprice based on current numbers from ethgasstation.info.
+      gasPrice: 5000000000 // 5 GWei (AKA 'Shannon') - a resonable gasprice based on current main chain numbers from ethgasstation.info.
     },
     ropsten: {
       provider: new HDWalletProvider(mnemonic, "https://ropsten.infura.io/"+infura_apikey),
       network_id: 3,
       gas: 4500000, // Current Ropsten gas limit. See https://ropsten.etherscan.io/block/3141628
-      gasPrice: 6250 // 0.00000625 GWei (AKA 'Shannon')
+      gasPrice: 1100000000 // 1.1 GWei - based on the lower end of current txs getting into blocks currently on Ropsten.
     }
   },
   solc: {
