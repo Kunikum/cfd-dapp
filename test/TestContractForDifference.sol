@@ -1,11 +1,11 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/ContractForDifference.sol";
 
 contract TestContractForDifference {
-    function testSomeSolidity() public {
+    function solidityTestExample() public {
         // ContractForDifference cfd = ContractForDifference(DeployedAddresses.ContractForDifference());
         // cfd.set(89);
         // uint expected = 89;
