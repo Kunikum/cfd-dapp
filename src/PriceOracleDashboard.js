@@ -19,6 +19,7 @@ class PriceOracleDashboard extends Component {
       accounts: 'Loading',
       owner: 'Loading...',
       priceRecords: [],
+      registerAssetId: '',
       registerBlockNo: '',
       registerPrice: '',
       message: 'Ready to make a transaction :)'
@@ -58,7 +59,7 @@ class PriceOracleDashboard extends Component {
     this.setState({ message: 'Waiting for Register Price Transaction to confirm...' });
 
     await this.state.apoInstance.recordAssetPrice(
-      0,
+      this.state.registerAssetId,
       this.state.registerBlockNo,
       new BigNumber(this.state.registerPrice).multipliedBy('1e18').toFixed(0),
       { from: this.state.accounts[0] }
@@ -66,6 +67,7 @@ class PriceOracleDashboard extends Component {
 
     this.setState({
       message: '\'Register Price\' Transaction successful!',
+      registerAssetId: '',
       registerBlockNo: '',
       registerPrice: ''
     });
@@ -89,43 +91,66 @@ class PriceOracleDashboard extends Component {
     }
 
     return (
-      <div className="pure-g">
+      <div>
 
-        <div className="pure-u-1-2">
-          <h2>Price Quote list</h2>
-          <table className="pure-table pure-table-bordered">
-            <thead>
-              <tr>
-                <th>Asset ID</th>
-                <th>Block number</th>
-                <th>Price Quote</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.priceRecords.map(record => { return <PriceRecordRow data={record} key={record.assetId.toString() + record.blockNumber.toString()} /> }) /* 'key' is just to stop the React warning of missing unique key */}
-            </tbody>
-          </table>
+        <div className="pure-g">
+
+          <div className="pure-u-1-2">
+            <h2>Price Quote list</h2>
+            <table className="pure-table pure-table-bordered">
+              <thead>
+                <tr>
+                  <th>Asset ID</th>
+                  <th>Block number</th>
+                  <th>Price Quote</th>
+                </tr>
+              </thead>
+              <tbody>
+                {this.state.priceRecords.map(record => { return <PriceRecordRow data={record} key={record.assetId.toString() + record.blockNumber.toString()} /> }) /* 'key' is just to stop the React warning of missing unique key */}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="pure-u-1-2">
+            <form onSubmit={this.registerPrice} className="pure-form pure-form-stacked">
+              <h2>Register Price</h2>
+              <p>
+                <label>Asset ID: </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  onKeyPress={event => event.charCode >= 48 && event.charCode <= 57}
+                  value={this.state.registerAssetId}
+                  onChange={event => this.setState({ registerAssetId: event.target.value })}
+                />
+              </p>
+              <p>
+                <label>Block No: </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  onKeyPress={event => event.charCode >= 48 && event.charCode <= 57}
+                  value={this.state.registerBlockNo}
+                  onChange={event => this.setState({ registerBlockNo: event.target.value })}
+                />
+              </p>
+              <p>
+                <label>Price: </label>
+                <input
+                  value={this.state.registerPrice}
+                  onChange={event => this.setState({ registerPrice: event.target.value })}
+                />
+              </p>
+              <button className="pure-button pure-button-primary">Register Price</button>
+            </form>
+          </div>
+
         </div>
 
-        <div className="pure-u-1-2">
-          <form onSubmit={this.registerPrice} className="pure-form pure-form-stacked">
-            <h2>Register Price</h2>
-            <p>
-              <label>Block No: </label>
-              <input
-                value={this.state.registerBlockNo}
-                onChange={event => this.setState({ registerBlockNo: event.target.value })}
-              />
-            </p>
-            <p>
-              <label>Price: </label>
-              <input
-                value={this.state.registerPrice}
-                onChange={event => this.setState({ registerPrice: event.target.value })}
-              />
-            </p>
-            <button className="pure-button pure-button-primary">Register Price</button>
-          </form>
+        <div className="buttom-bar">
+          <div>Status: {this.state.message}</div>
         </div>
 
       </div>

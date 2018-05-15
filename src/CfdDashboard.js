@@ -92,8 +92,10 @@ class CfdDashboard extends Component {
 
     this.setState({
       message: '\'Make CFD\' Transaction successful!',
+      makeAssetId: '',
       makePosition: 0,
-      makeAmountEther: ''
+      makeAmountEther: '',
+      makeEndBlock: ''
     });
   };
 
@@ -123,10 +125,10 @@ class CfdDashboard extends Component {
 
     console.log('onSettleCfd cfdId', cfdId);
 
-    // console.log('cfdInstance.settleCfd.estimateGas', await this.state.cfdInstance.settleCfd.estimateGas(
-    //   cfdId,
-    //   { from: this.state.accounts[0] }
-    // ));
+    console.log('cfdInstance.settleCfd.estimateGas', await this.state.cfdInstance.settleCfd.estimateGas(
+      cfdId,
+      { from: this.state.accounts[0] }
+    ));
 
     this.setState({ message: 'Waiting for Settle CFD Transaction to confirm...' });
 
@@ -135,7 +137,14 @@ class CfdDashboard extends Component {
       { from: this.state.accounts[0] }
     );
 
-    console.log('settleCfdTx', settleCfdTx);
+    const settlement = settleCfdTx.logs[0].args;
+    console.log('Settled CFD:', {
+        cfdId: settlement.CfdId.toNumber(),
+        startPrice: settlement.startPrice.dividedBy('1e18').toNumber(),
+        endPrice: settlement.endPrice.dividedBy('1e18').toNumber(), 
+        makerSettlement: settlement.makerSettlement.dividedBy('1e18').toNumber(), 
+        takerSettlement: settlement.takerSettlement.dividedBy('1e18').toNumber()
+      });
 
     this.setState({ message: '\'Settle CFD\' Transaction successful!' });
   };
