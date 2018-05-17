@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import web3 from './utils/web3'
-import { getCfdInstance, getApoInstance } from './utils/ContractLoader'
+import { getCfdInstance, getApoInstance, getERC20TestInstance } from './utils/ContractLoader'
+import DaiAuthorizer from './components/DaiAuthorizer'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -12,9 +13,11 @@ class CfdDashboard extends Component {
     super(props)
 
     this.state = {
-      web3: null,
+      web3: undefined,
       currentBlockNumber: 0,
-      cfdInstance: null,
+      cfdInstance: undefined,
+      daiInstance: undefined,
+      cfdContractAddress: undefined,
       accounts: 'Loading...',
       oracleOwner: 'Loading...',
       numberOfContracts: 'Loading...',
@@ -23,18 +26,22 @@ class CfdDashboard extends Component {
       makePosition: '0',
       makeAmountEther: '',
       makeEndBlock: '',
-      message: 'Ready to make a transaction :)'
+      message: 'Ready to make a transaction :)',
+      daiAuthorized: undefined
     }
   }
 
   async componentDidMount() {
     const cfdInstance = await getCfdInstance();
     const apoInstance = await getApoInstance();
+    const daiInstance = await getERC20TestInstance();
 
     this.setState({
       web3: web3,
       currentBlockNumber: await web3.eth.getBlockNumber(),
       cfdInstance: cfdInstance,
+      daiInstance: daiInstance,
+      cfdContractAddress: cfdInstance.address,
       accounts: await web3.eth.getAccounts(),
       oracleOwner: await apoInstance.owner.call(),
       numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString()
@@ -67,6 +74,10 @@ class CfdDashboard extends Component {
         contracts: contracts
       });
     }
+  }
+
+  onDaiAuthUpdated = (daiAuthorized) => {
+    console.log('daiAuthorized', daiAuthorized);
   }
 
   onMakeCfd = async (event) => {
@@ -139,12 +150,12 @@ class CfdDashboard extends Component {
 
     const settlement = settleCfdTx.logs[0].args;
     console.log('Settled CFD:', {
-        cfdId: settlement.CfdId.toNumber(),
-        startPrice: settlement.startPrice.dividedBy('1e18').toNumber(),
-        endPrice: settlement.endPrice.dividedBy('1e18').toNumber(), 
-        makerSettlement: settlement.makerSettlement.dividedBy('1e18').toNumber(), 
-        takerSettlement: settlement.takerSettlement.dividedBy('1e18').toNumber()
-      });
+      cfdId: settlement.CfdId.toNumber(),
+      startPrice: settlement.startPrice.dividedBy('1e18').toNumber(),
+      endPrice: settlement.endPrice.dividedBy('1e18').toNumber(),
+      makerSettlement: settlement.makerSettlement.dividedBy('1e18').toNumber(),
+      takerSettlement: settlement.takerSettlement.dividedBy('1e18').toNumber()
+    });
 
     this.setState({ message: '\'Settle CFD\' Transaction successful!' });
   };
@@ -194,7 +205,7 @@ class CfdDashboard extends Component {
       <div>
 
         <div className="pure-g">
-          <div className="pure-u-1">
+          <div className="pure-u-1 pure-u-sm-4-5">
             <h2>Contract general properties</h2>
             <table className="pure-table pure-table-bordered">
               <thead>
@@ -222,6 +233,11 @@ class CfdDashboard extends Component {
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <div className="pure-u-1 pure-u-sm-1-5">
+            <h2>Token Authorization</h2>
+            <DaiAuthorizer accounts={this.state.accounts} cfdContractAddress={this.state.cfdContractAddress} daiInstance={this.state.daiInstance} onDaiAuthUpdated={this.onDaiAuthUpdated}/>
           </div>
 
           <div className="pure-u-1">
