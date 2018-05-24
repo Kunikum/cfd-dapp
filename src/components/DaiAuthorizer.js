@@ -45,7 +45,6 @@ class DaiAuthorizer extends Component {
       daiAllowed: currentDaiAllowance > 0
     });
     this.props.onDaiAuthUpdated(currentDaiAllowance > 0)
-    console.log('currentDaiAllowance', currentDaiAllowance.toNumber());
 
     this.setState({ updatingDaiAllowance: false });
   }
@@ -65,7 +64,6 @@ class DaiAuthorizer extends Component {
   }
 
   handleChange = async (event) => {
-    console.log('event.target.checked', event.target.checked);
     if (event.target.checked) {
       await this.setDaiAllowance(this.state.max256BitNumber);
     } else {

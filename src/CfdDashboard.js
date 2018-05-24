@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import web3 from './utils/web3'
-import { getCfdInstance, getApoInstance, getERC20TestInstance } from './utils/ContractLoader'
+import { getCfdInstance, getApoInstance, getDaiStablecoinInstance } from './utils/ContractLoader'
 import DaiAuthorizer from './components/DaiAuthorizer'
 
 import './css/oswald.css'
@@ -24,17 +24,19 @@ class CfdDashboard extends Component {
       contracts: [],
       makeAssetId: '',
       makePosition: '0',
-      makeAmountEther: '',
+      makeAmountDai: '',
       makeEndBlock: '',
       message: 'Ready to make a transaction :)',
-      daiAuthorized: undefined
+      daiAuthorized: undefined,
+      daiAvailable: undefined
     }
   }
 
   async componentDidMount() {
     const cfdInstance = await getCfdInstance();
     const apoInstance = await getApoInstance();
-    const daiInstance = await getERC20TestInstance();
+    const daiInstance = await getDaiStablecoinInstance();
+    const accounts = await web3.eth.getAccounts();
 
     this.setState({
       web3: web3,
@@ -42,11 +44,12 @@ class CfdDashboard extends Component {
       cfdInstance: cfdInstance,
       daiInstance: daiInstance,
       cfdContractAddress: cfdInstance.address,
-      accounts: await web3.eth.getAccounts(),
+      accounts: accounts,
       oracleOwner: await apoInstance.owner.call(),
-      numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString()
+      numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString(),
+      daiAvailable: (await daiInstance.balanceOf.call(accounts[0])).dividedBy('1e18').toNumber()
     });
-
+    console.log('daiAvailable', this.state.daiAvailable)
     // Get array of array contracts and translate them to array of objects.
     // We do this in the order of highest to lowest ID, so we get newest contracts loaded first.
     let contracts = [];
@@ -90,7 +93,7 @@ class CfdDashboard extends Component {
       this.state.makeAssetId,
       this.state.makePosition,
       this.state.makeEndBlock,
-      { value: web3.utils.toWei(this.state.makeAmountEther, 'ether'), from: this.state.accounts[0] }
+      { from: this.state.accounts[0] }
     ));
 
     await this.state.cfdInstance.makeCfd(
@@ -98,14 +101,14 @@ class CfdDashboard extends Component {
       this.state.makeAssetId,
       this.state.makePosition,
       this.state.makeEndBlock,
-      { value: web3.utils.toWei(this.state.makeAmountEther, 'ether'), from: this.state.accounts[0] }
+      { from: this.state.accounts[0] }
     );
 
     this.setState({
       message: '\'Make CFD\' Transaction successful!',
       makeAssetId: '',
       makePosition: 0,
-      makeAmountEther: '',
+      makeAmountDai: '',
       makeEndBlock: ''
     });
   };
@@ -113,19 +116,19 @@ class CfdDashboard extends Component {
   onTakeCfd = async (cfdId, event) => {
     event.preventDefault();
 
-    const cfd = this.state.contracts.find((c) => { return c.id === cfdId; });
+    // const cfd = this.state.contracts.find((c) => { return c.id === cfdId; });
 
     console.log('cfdInstance.takeCfd.estimateGas', await this.state.cfdInstance.takeCfd.estimateGas(
       cfdId,
       this.state.accounts[0],
-      { value: web3.utils.toWei(cfd.amount, 'ether'), from: this.state.accounts[0] }
+      { from: this.state.accounts[0] }
     ));
 
     this.setState({ message: 'Waiting for Take CFD Transaction to confirm...' });
     await this.state.cfdInstance.takeCfd(
       cfdId,
       this.state.accounts[0],
-      { value: web3.utils.toWei(cfd.amount, 'ether'), from: this.state.accounts[0] }
+      { from: this.state.accounts[0] }
     );
 
     this.setState({ message: '\'Take CFD\' Transaction successful!' });
@@ -265,10 +268,10 @@ class CfdDashboard extends Component {
                 </select>
               </p>
               <p>
-                <label>Amount of Ether: </label>
+                <label>Amount of Dai: </label>
                 <input
-                  value={this.state.makeAmountEther}
-                  onChange={event => this.setState({ makeAmountEther: event.target.value })}
+                  value={this.state.makeAmountDai}
+                  onChange={event => this.setState({ makeAmountDai: event.target.value })}
                 />
               </p>
               <p>
