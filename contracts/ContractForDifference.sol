@@ -25,7 +25,7 @@ contract ContractForDifference {
         bool isSettled;
     }
 
-    int256 public leverage = 5;
+    int256 public leverage = 1;
     AssetPriceOracle public priceOracle;
 
     mapping(uint256 => Cfd) public contracts;
