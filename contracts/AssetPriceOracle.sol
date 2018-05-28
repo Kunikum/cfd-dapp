@@ -36,4 +36,8 @@ contract AssetPriceOracle is DSAuth {
         require(priceRecord.isRecord);
         return priceRecord.price;
     }
+
+    function () public {
+        // dont receive ether via fallback method (by not having 'payable' modifier on this function).
+    }
 }

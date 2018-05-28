@@ -230,4 +230,8 @@ contract ContractForDifference {
             return uint256(settlement); // Settlement was more than zero and less than sum of deposit amounts, so we can pay it out as is.
         }
     }
+
+    function () public {
+        // dont receive ether via fallback method (by not having 'payable' modifier on this function).
+    }
 }
