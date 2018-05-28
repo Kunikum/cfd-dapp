@@ -13,7 +13,7 @@ contract('ContractForDifference', async (accounts) => {
   const makerPaymentAddress = accounts[0];
   const assetId = 1;
   const makerPosition = 1; // long = 0, short = 1
-  const paymentAmount = 1000; // Wei
+  const paymentAmount = 1000000000000000000; // Amount in Wei
   let contractStartBlock;
   let contractEndBlock; // For some reason I can't use await here without the test runner dropping the whole suite, so I'll set this value in the first test function.
 
@@ -22,10 +22,10 @@ contract('ContractForDifference', async (accounts) => {
   const takerPosition = 0;
 
   const startPrice = 100;
-  const endPrice = 110;
+  const endPrice = 120;
 
-  const expectedMakerPayout = 500;
-  const expectedTakerPayout = 1500;
+  const expectedMakerPayout = 800000000000000000;
+  const expectedTakerPayout = 1200000000000000000;
 
   it("...should make a CFD and save it.", async () => {
     cfdInstance = await ContractForDifference.deployed()
