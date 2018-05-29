@@ -23,6 +23,7 @@ contract ContractForDifference {
         // CFD state variables
         bool isTaken;
         bool isSettled;
+        bool isRefunded;
     }
 
     int256 public leverage = 1;
@@ -32,7 +33,7 @@ contract ContractForDifference {
     uint256                 public numberOfContracts;
 
     event LogMakeCfd (
-    uint256 indexed CfdId, 
+    uint256 indexed cfdId, 
     address indexed makerAddress, 
     Position indexed makerPosition,
     uint256 assetId,
@@ -40,10 +41,10 @@ contract ContractForDifference {
     uint256 contractEndBlock);
 
     event LogTakeCfd (
-    uint256 indexed CfdId, 
-    address indexed makerAddress, 
-    Position makerPosition, 
-    address indexed takerAddress, 
+    uint256 indexed cfdId,
+    address indexed makerAddress,
+    Position makerPosition,
+    address indexed takerAddress,
     Position takerPosition,
     uint256 assetId,
     uint256 amount,
@@ -51,11 +52,16 @@ contract ContractForDifference {
     uint256 contractEndBlock);
 
     event LogCfdSettled (
-    uint256 indexed CfdId,
+    uint256 indexed cfdId,
     uint256 startPrice,
     uint256 endPrice,
     uint256 makerSettlement,
     uint256 takerSettlement);
+
+    event LogCfdRefunded (
+    uint256 indexed cfdId,
+    address indexed makerAddress,
+    uint256 amount);
 
     event Debug (
         string description,
@@ -101,13 +107,13 @@ contract ContractForDifference {
     }
 
     function getCfd(
-        uint256 CfdId
+        uint256 cfdId
         ) 
         public 
         view 
-        returns (address makerAddress, Position makerPosition, address takerAddress, Position takerPosition, uint256 assetId, uint256 amount, uint256 startTime, uint256 endTime, bool isTaken, bool isSettled)
+        returns (address makerAddress, Position makerPosition, address takerAddress, Position takerPosition, uint256 assetId, uint256 amount, uint256 startTime, uint256 endTime, bool isTaken, bool isSettled, bool isRefunded)
         {
-        Cfd storage cfd = contracts[CfdId];
+        Cfd storage cfd = contracts[cfdId];
         return (
             cfd.maker.addr,
             cfd.maker.position,
@@ -118,20 +124,22 @@ contract ContractForDifference {
             cfd.contractStartBlock,
             cfd.contractEndBlock,
             cfd.isTaken,
-            cfd.isSettled
+            cfd.isSettled,
+            cfd.isRefunded
         );
     }
 
     function takeCfd(
-        uint256 CfdId, address takerAddress
+        uint256 cfdId, address takerAddress
         ) 
         public
         payable
         returns (bool success) {
-        Cfd storage cfd = contracts[CfdId];
+        Cfd storage cfd = contracts[cfdId];
         
         require(cfd.isTaken != true);                  // Contract must not be taken.
         require(cfd.isSettled != true);                // Contract must not be settled.
+        require(cfd.isRefunded != true);               // Contract must not be refunded.
         require(cfd.maker.addr != address(0));         // Contract must have a maker,
         require(cfd.taker.addr == address(0));         // and no taker.
         require(takerAddress != cfd.maker.addr);       // Maker and Taker must not be the same address.
@@ -146,7 +154,7 @@ contract ContractForDifference {
         cfd.isTaken = true;
 
         emit LogTakeCfd(
-            CfdId,
+            cfdId,
             cfd.maker.addr,
             cfd.maker.position,
             cfd.taker.addr,
@@ -161,14 +169,15 @@ contract ContractForDifference {
     }
 
     function settleCfd(
-        uint256 CfdId
+        uint256 cfdId
         )
         public
         returns (bool success) {
-        Cfd storage cfd = contracts[CfdId];
+        Cfd storage cfd = contracts[cfdId];
 
         require(cfd.contractEndBlock <= block.number); // Contract must have met its end time.
         require(!cfd.isSettled);                       // Contract must not be settled already.
+        require(!cfd.isRefunded);                      // Contract must not be refunded.
         require(cfd.isTaken);                          // Contract must be taken.
         require(cfd.maker.addr != address(0));         // Contract must have a maker address.
         require(cfd.taker.addr != address(0));         // Contract must have a taker address.
@@ -192,7 +201,7 @@ contract ContractForDifference {
         cfd.isSettled = true;
 
         emit LogCfdSettled (
-            CfdId,
+            cfdId,
             startPrice,
             endPrice,
             makerSettlement,
@@ -229,6 +238,28 @@ contract ContractForDifference {
         } else {
             return uint256(settlement); // Settlement was more than zero and less than sum of deposit amounts, so we can pay it out as is.
         }
+    }
+
+    function refundCfd(
+        uint256 cfdId
+    )
+    public
+    returns (bool success) {
+        Cfd storage cfd = contracts[cfdId];
+        require(!cfd.isSettled);                       // Contract must not be settled already.
+        require(!cfd.isTaken);                         // Contract must not be taken.
+        require(cfd.maker.addr == msg.sender);         // Function caller must be the contract maker
+
+        cfd.maker.addr.transfer(cfd.amount);
+        cfd.isRefunded = true;
+
+        emit LogCfdRefunded(
+            cfdId,
+            cfd.maker.addr,
+            cfd.amount
+        );
+
+        return true;
     }
 
     function () public {

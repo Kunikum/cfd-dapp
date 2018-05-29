@@ -29,6 +29,7 @@ module.exports = (web3) => {
       }, (err, res) => { resolve(res); });
     });
   }
+  
   function waitUntilBlock(seconds, targetBlock) {
     return new Promise((resolve) => {
       const asyncIterator = () => {
@@ -43,6 +44,7 @@ module.exports = (web3) => {
       asyncIterator();
     });
   }
+  
   function wait(seconds = 20, blocks = 1) {
     return new Promise((resolve) => {
       return web3.eth.getBlock('latest', (e, { number }) => {
@@ -53,5 +55,6 @@ module.exports = (web3) => {
       return waitUntilBlock(seconds, targetBlock);
     });
   }
+
   return { wait, waitUntilBlock };
 };
