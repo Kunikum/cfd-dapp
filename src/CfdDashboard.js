@@ -60,7 +60,8 @@ class CfdDashboard extends Component {
         contractStartBlock: contract[6].toNumber(),
         contractEndBlock: contract[7].toNumber(),
         isTaken: contract[8],
-        isSettled: contract[9]
+        isSettled: contract[9],
+        isRefunded: contract[10]
       });
 
       this.setState({
@@ -139,20 +140,49 @@ class CfdDashboard extends Component {
 
     const settlement = settleCfdTx.logs[0].args;
     console.log('Settled CFD:', {
-        cfdId: settlement.CfdId.toNumber(),
-        startPrice: settlement.startPrice.dividedBy('1e18').toNumber(),
-        endPrice: settlement.endPrice.dividedBy('1e18').toNumber(), 
-        makerSettlement: settlement.makerSettlement.dividedBy('1e18').toNumber(), 
-        takerSettlement: settlement.takerSettlement.dividedBy('1e18').toNumber()
-      });
+      cfdId: settlement.cfdId.toNumber(),
+      amount: settlement.amount.dividedBy('1e18').toNumber(),
+      startPrice: settlement.startPrice.dividedBy('1e18').toNumber(),
+      endPrice: settlement.endPrice.dividedBy('1e18').toNumber(),
+      makerSettlement: settlement.makerSettlement.dividedBy('1e18').toNumber(),
+      takerSettlement: settlement.takerSettlement.dividedBy('1e18').toNumber()
+    });
 
     this.setState({ message: '\'Settle CFD\' Transaction successful!' });
   };
 
+  onRefundCfd = async (cfdId, event) => {
+    event.preventDefault();
+
+    console.log('onRefundCfd cfdId', cfdId);
+
+    console.log('cfdInstance.refundCfd.estimateGas', await this.state.cfdInstance.refundCfd.estimateGas(
+      cfdId,
+      { from: this.state.accounts[0] }
+    ));
+
+    this.setState({ message: 'Waiting for Refund CFD Transaction to confirm...' });
+
+    const refundCfdTx = await this.state.cfdInstance.refundCfd(
+      cfdId,
+      { from: this.state.accounts[0] }
+    );
+
+    const refund = refundCfdTx.logs[0].args;
+    console.log('Refunded CFD:', {
+      cfdId: refund.cfdId.toNumber(),
+      makerAddress: refund.makerAddress,
+      amount: refund.amount.dividedBy('1e18').toNumber()
+    });
+
+    this.setState({ message: '\'Refund CFD\' Transaction successful!' });
+  };
+
   render() {
     const ContractRow = (props) => {
-      const disableTake = props.data.isTaken || this.state.currentBlockNumber >= props.data.contractEndBlock;
-      const disableSettle = !props.data.isTaken || props.data.isSettled || this.state.currentBlockNumber < props.data.contractEndBlock - 1;
+      const disableTake = props.data.isTaken || props.data.isRefunded || this.state.currentBlockNumber >= props.data.contractEndBlock;
+      const disableSettle = !props.data.isTaken || props.data.isSettled || props.data.isRefunded || this.state.currentBlockNumber < props.data.contractEndBlock - 1;
+      const disableRefund = props.data.isTaken || props.data.isSettled || props.data.isRefunded || props.data.maker.addr.toLowerCase() !== this.state.accounts[0].toLowerCase();
       return (
         <tr>
           <td>
@@ -185,6 +215,7 @@ class CfdDashboard extends Component {
           <td>
             <button onClick={(e) => this.onTakeCfd(props.data.id, e)} className="pure-button" disabled={disableTake}>Take</button>
             <button onClick={(e) => this.onSettleCfd(props.data.id, e)} className="pure-button" disabled={disableSettle}>Settle</button>
+            <button onClick={(e) => this.onRefundCfd(props.data.id, e)} className="pure-button" disabled={disableRefund}>Refund</button>
           </td>
         </tr>
       );
