@@ -11,15 +11,15 @@ contract('ContractForDifference', async (accounts) => {
   let cfdInstance;
   let oracleInstance;
 
-  const makerPaymentAddress = accounts[0];
+  const makerAddress = accounts[0];
   const assetId = 1;
   const makerPosition = 1; // long = 0, short = 1
   const paymentAmount = 1000000000000000000; // Amount in Wei
   let contractStartBlock;
   let contractEndBlock; // For some reason I can't use await here without the test runner dropping the whole suite, so I'll set this value in the first test function.
 
-  const cfdId = 0;
-  const takerPaymentAddress = accounts[1];
+  let cfdId;
+  const takerAddress = accounts[1];
   const takerPosition = 0;
 
   const startPrice = 100;
@@ -32,21 +32,24 @@ contract('ContractForDifference', async (accounts) => {
     cfdInstance = await ContractForDifference.deployed()
     contractEndBlock = 10 + await web3Latest.eth.getBlockNumber();
 
-    const makeCfdResp = await cfdInstance.makeCfd(
-      makerPaymentAddress,
+    // Make CFD
+    const makeCfdResult = await cfdInstance.makeCfd(
+      makerAddress,
       assetId,
       makerPosition,
       contractEndBlock,
-      { from: makerPaymentAddress, value: paymentAmount }
+      { from: makerAddress, value: paymentAmount }
     );
+    assert.equal(makeCfdResult.logs[0].event, 'LogMakeCfd', "Could not find expected event log");
+    cfdId = makeCfdResult.logs[0].args.cfdId;
 
-    const cfd = await cfdInstance.getCfd.call(0); // 0 = ID of the first contract
+    const cfd = await cfdInstance.getCfd.call(cfdId);
 
     // Validate event log
-    assert.equal(makeCfdResp.logs[0].event, 'LogMakeCfd', "Could not find expected event log"); // TODO: test the log fields
+    assert.equal(makeCfdResult.logs[0].event, 'LogMakeCfd', "Could not find expected event log"); // TODO: test the log fields
 
     // Validate contract data
-    assert.equal(cfd[0], makerPaymentAddress, "returned makerAddress does not match passed value.");
+    assert.equal(cfd[0], makerAddress, "returned makerAddress does not match passed value.");
     assert.equal(cfd[1].toNumber(), makerPosition, "returned makerPosition does not match passed value.");
     assert.equal(cfd[2], 0, "returned takerAddress is not 0.");
     assert.equal(cfd[3].toNumber(), 0, "returned takerposition is not 0.");
@@ -59,27 +62,27 @@ contract('ContractForDifference', async (accounts) => {
   });
 
   it("...should take a CFD and update its values.", async () => {
-    const takeCfdResp = await cfdInstance.takeCfd(
+    const takeCfdResult = await cfdInstance.takeCfd(
       cfdId,
-      takerPaymentAddress,
-      { from: takerPaymentAddress, value: paymentAmount }
+      takerAddress,
+      { from: takerAddress, value: paymentAmount }
     );
 
-    contractStartBlock = takeCfdResp.receipt.blockNumber; // Save the contract start block number for later test.
+    contractStartBlock = takeCfdResult.receipt.blockNumber; // Save the contract start block number for registering price data.
 
     const cfd = await cfdInstance.getCfd(0);
 
     // Validate event log
-    assert.equal(takeCfdResp.logs[0].event, 'LogTakeCfd', "Could not find expected event log"); // TODO: test the log fields
+    assert.equal(takeCfdResult.logs[0].event, 'LogTakeCfd', "Could not find expected event log"); // TODO: test the log fields
 
     // Validate contract data
-    assert.equal(cfd[0], makerPaymentAddress, "returned unexpected makerAddress.");
+    assert.equal(cfd[0], makerAddress, "returned unexpected makerAddress.");
     assert.equal(cfd[1].toNumber(), makerPosition, "returned unexpected makerPosition.");
-    assert.equal(cfd[2], takerPaymentAddress, "returned unexpected takerAddress.");
+    assert.equal(cfd[2], takerAddress, "returned unexpected takerAddress.");
     assert.equal(cfd[3].toNumber(), takerPosition, "returned unexpected takerposition.");
     assert.equal(cfd[4].toNumber(), assetId, "returned assetId is not correct.");
     assert.equal(cfd[5].toNumber(), paymentAmount, "returned unexpected paymentAmount.");
-    assert.equal(cfd[6].toNumber(), takeCfdResp.receipt.blockNumber, "returned contractStartBlock is not the current block.");
+    assert.equal(cfd[6].toNumber(), takeCfdResult.receipt.blockNumber, "returned contractStartBlock is not the current block.");
     assert.equal(cfd[7].toNumber(), contractEndBlock, "returned unexpected contractEndBlock.");
     assert.equal(cfd[8], true, "isTaken should be true.");
     assert.equal(cfd[9], false, "isSettled should be false.");
@@ -104,10 +107,36 @@ contract('ContractForDifference', async (accounts) => {
     // Then settle and verify correct outcome
     await waitUntilBlock(15, contractEndBlock);
 
-    const settleResp = await cfdInstance.settleCfd(0);
+    const settleResult = await cfdInstance.settleCfd(0);
 
-    assert.equal(settleResp.logs[0].args.makerSettlement, expectedMakerPayout);
-    assert.equal(settleResp.logs[0].args.takerSettlement, expectedTakerPayout);
+    assert.equal(settleResult.logs[0].args.makerSettlement, expectedMakerPayout);
+    assert.equal(settleResult.logs[0].args.takerSettlement, expectedTakerPayout);
+  });
+
+  it("...should accept taking CFD when makerAddress = takerAddress.", async () => {
+    cfdInstance = await ContractForDifference.deployed()
+    contractEndBlock = 10 + await web3Latest.eth.getBlockNumber();
+
+    // Make CFD
+    const makeCfdResult = await cfdInstance.makeCfd(
+      makerAddress,
+      assetId,
+      makerPosition,
+      contractEndBlock,
+      { from: makerAddress, value: paymentAmount }
+    );
+    assert.equal(makeCfdResult.logs[0].event, 'LogMakeCfd', "Could not find expected LogMakeCfd event log");
+    cfdId = makeCfdResult.logs[0].args.cfdId;
+
+    // Take CFD with same takerAddress as makerAddress
+    const takeCfdResult = await cfdInstance.takeCfd(
+      cfdId,
+      makerAddress,
+      { from: makerAddress, value: paymentAmount }
+    );
+
+    // Verify that CFD was taken
+    assert.equal(takeCfdResult.logs[0].event, 'LogTakeCfd', "Could not find expected LogTakeCfd event log");
   });
 
   it("...should reject contract creation when end block is before current block.", async () => {
@@ -116,11 +145,11 @@ contract('ContractForDifference', async (accounts) => {
 
     await assertRevert(
       cfdInstance.makeCfd(
-        makerPaymentAddress,
+        makerAddress,
         assetId,
         makerPosition,
         contractEndBlock,
-        { from: makerPaymentAddress, value: paymentAmount }
+        { from: makerAddress, value: paymentAmount }
       )
     );
   });
@@ -129,7 +158,7 @@ contract('ContractForDifference', async (accounts) => {
     cfdInstance = await ContractForDifference.deployed();
     await assertRevert(
       cfdInstance.sendTransaction(
-        { from: makerPaymentAddress, value: paymentAmount }
+        { from: makerAddress, value: paymentAmount }
       )
     );
   });
