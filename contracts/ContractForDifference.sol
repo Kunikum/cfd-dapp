@@ -132,7 +132,8 @@ contract ContractForDifference {
     }
 
     function takeCfd(
-        uint256 cfdId, address takerAddress
+        uint256 cfdId, 
+        address takerAddress
         ) 
         public
         payable
@@ -144,7 +145,7 @@ contract ContractForDifference {
         require(cfd.isRefunded != true);               // Contract must not be refunded.
         require(cfd.maker.addr != address(0));         // Contract must have a maker,
         require(cfd.taker.addr == address(0));         // and no taker.
-        require(takerAddress != cfd.maker.addr);       // Maker and Taker must not be the same address.
+        // require(takerAddress != cfd.maker.addr);       // Maker and Taker must not be the same address. (disabled for now)
         require(msg.value == cfd.amount);              // Takers deposit must match makers deposit.
         require(takerAddress != address(0));           // Taker must provide a non-zero address.
         require(block.number <= cfd.contractEndBlock); // Taker must take contract before end block.
