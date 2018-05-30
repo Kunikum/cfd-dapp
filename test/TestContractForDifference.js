@@ -1,6 +1,7 @@
 const ContractForDifference = artifacts.require("./ContractForDifference.sol");
 const AssetPriceOracle = artifacts.require("./AssetPriceOracle.sol");
 const { wait, waitUntilBlock } = require("./utils/BlockUtils.js")(web3);
+import assertRevert from "openzeppelin-solidity/test/helpers/assertRevert.js";
 
 const Web3 = require('web3');
 
@@ -91,13 +92,13 @@ contract('ContractForDifference', async (accounts) => {
       assetId,
       contractStartBlock,
       startPrice,
-      {from: accounts[0]}
+      { from: accounts[0] }
     );
     await oracleInstance.recordAssetPrice(
       assetId,
       contractEndBlock,
       endPrice,
-      {from: accounts[0]}
+      { from: accounts[0] }
     );
 
     // Then settle and verify correct outcome
@@ -107,5 +108,20 @@ contract('ContractForDifference', async (accounts) => {
 
     assert.equal(settleResp.logs[0].args.makerSettlement, expectedMakerPayout);
     assert.equal(settleResp.logs[0].args.takerSettlement, expectedTakerPayout);
+  });
+
+  it("...should reject contract creation when end block is before current block.", async () => {
+    cfdInstance = await ContractForDifference.deployed()
+    contractEndBlock = await web3Latest.eth.getBlockNumber() - 1; // Invalid end block!
+
+    await assertRevert(
+      cfdInstance.makeCfd(
+        makerPaymentAddress,
+        assetId,
+        makerPosition,
+        contractEndBlock,
+        { from: makerPaymentAddress, value: paymentAmount }
+      )
+    );
   });
 });

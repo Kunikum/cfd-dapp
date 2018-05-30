@@ -1,3 +1,8 @@
+require('babel-register')({
+  ignore: /node_modules\/(?!openzeppelin-solidity\/test\/helpers)/
+})
+require('babel-polyfill')
+
 var HDWalletProvider = require("truffle-hdwallet-provider");
 
 var infura_apikey = "UKR0P7qucHTZ96FjnDB1";
