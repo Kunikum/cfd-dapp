@@ -84,6 +84,7 @@ contract ContractForDifference {
         payable
         returns (uint256)
     {
+        require(contractEndBlock > block.number); // Contract end block must be after current block.
         require(msg.value > 0); // Contract Wei amount must be more than zero - contracts for zero Wei does not make sense.
         require(makerAddress != address(0)); // Maker must provide a non-zero address.
         
