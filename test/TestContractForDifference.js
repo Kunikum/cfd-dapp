@@ -124,4 +124,13 @@ contract('ContractForDifference', async (accounts) => {
       )
     );
   });
+
+  it("...should reject sending ether directly to the contract.", async () => {
+    cfdInstance = await ContractForDifference.deployed();
+    await assertRevert(
+      cfdInstance.sendTransaction(
+        { from: makerPaymentAddress, value: paymentAmount }
+      )
+    );
+  });
 });
