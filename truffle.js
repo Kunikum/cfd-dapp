@@ -1,7 +1,9 @@
-require('babel-register')({
-  ignore: /node_modules\/(?!openzeppelin-solidity\/test\/helpers)/
-})
-require('babel-polyfill')
+// // Trying to support ES6 module imports for test helpers. 
+// // But this requires plugin config in .babelrc file, which messes up the react build.
+// require('babel-register')({
+//   ignore: /node_modules\/(?!openzeppelin-solidity\/test\/helpers)/
+// })
+// require('babel-polyfill')
 
 var HDWalletProvider = require("truffle-hdwallet-provider");
 
@@ -27,7 +29,7 @@ module.exports = {
     }
   },
   solc: {
-    optimizer: { // 
+    optimizer: {
       enabled: false, // Disabled by default! But we want smaller contract size, so we enable it. See release notes here: https://github.com/trufflesuite/truffle/releases/tag/v4.0.0
       runs: 500 // Informs optimizer off how to balance trade-off between contract size (and therefor deploy gas cost) and contract function execution cost.
     }
