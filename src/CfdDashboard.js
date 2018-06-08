@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import web3 from './utils/web3'
 import { getCfdInstance, getApoInstance } from './utils/ContractLoader'
+import { getSettlements } from './utils/CfdUtils'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -68,6 +69,8 @@ class CfdDashboard extends Component {
         contracts: contracts
       });
     }
+
+    console.log('await getSettlements():', await getSettlements(cfdInstance));
   }
 
   onMakeCfd = async (event) => {
