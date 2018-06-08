@@ -53,6 +53,8 @@ contract ContractForDifference {
 
     event LogCfdSettled (
     uint256 indexed cfdId,
+    address indexed makerAddress,
+    address indexed takerAddress,
     uint256 amount,
     uint256 startPrice,
     uint256 endPrice,
@@ -205,6 +207,8 @@ contract ContractForDifference {
 
         emit LogCfdSettled (
             cfdId,
+            cfd.maker.addr,
+            cfd.taker.addr,
             amount,
             startPrice,
             endPrice,
