@@ -31,14 +31,16 @@ class CfdDashboard extends Component {
   async componentDidMount() {
     const cfdInstance = await getCfdInstance();
     const apoInstance = await getApoInstance();
+    const currentBlockNumber = await web3.eth.getBlockNumber();
 
     this.setState({
       web3: web3,
-      currentBlockNumber: await web3.eth.getBlockNumber(),
+      currentBlockNumber: currentBlockNumber,
       cfdInstance: cfdInstance,
       accounts: await web3.eth.getAccounts(),
       oracleOwner: await apoInstance.owner.call(),
-      numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString()
+      numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString(),
+      makeEndBlock: currentBlockNumber + 40 // Suggest Make end block to be current block plus 10 minutes of blocks (4 blocks per minute * 10 minutes)
     });
 
     // Get array of array contracts and translate them to array of objects.
@@ -46,6 +48,13 @@ class CfdDashboard extends Component {
     let contracts = [];
     for (let i = this.state.numberOfContracts - 1; i >= 0; i--) {
       const contract = await cfdInstance.getCfd.call(i);
+      
+      const contractEndBlock = contract[7].toNumber();
+      const isTaken = contract[8];
+      const isSettled = contract[9];
+      const isRefunded = contract[10];
+      
+
       contracts.unshift({
         id: i,
         maker: {
@@ -59,10 +68,11 @@ class CfdDashboard extends Component {
         assetId: contract[4].toNumber(),
         amount: web3.utils.fromWei(contract[5].toString(), 'ether'),
         contractStartBlock: contract[6].toNumber(),
-        contractEndBlock: contract[7].toNumber(),
-        isTaken: contract[8],
-        isSettled: contract[9],
-        isRefunded: contract[10]
+        contractEndBlock: contractEndBlock,
+        isTaken: isTaken,
+        isSettled: isSettled,
+        isRefunded: isRefunded,
+        status: this.getCfdState(isTaken, isSettled, isRefunded, contractEndBlock, currentBlockNumber)
       });
 
       this.setState({
@@ -216,6 +226,9 @@ class CfdDashboard extends Component {
             {props.data.contractEndBlock}
           </td>
           <td>
+            {props.data.status}
+          </td>
+          <td>
             <button onClick={(e) => this.onTakeCfd(props.data.id, e)} className="pure-button" disabled={disableTake}>Take</button>
             <button onClick={(e) => this.onSettleCfd(props.data.id, e)} className="pure-button" disabled={disableSettle}>Settle</button>
             <button onClick={(e) => this.onRefundCfd(props.data.id, e)} className="pure-button" disabled={disableRefund}>Refund</button>
@@ -318,6 +331,7 @@ class CfdDashboard extends Component {
                   <th>Deposit (Ether)</th>
                   <th>Start Block</th>
                   <th>End Block</th>
+                  <th>Status</th>
                   <th>Options</th>
                 </tr>
               </thead>
@@ -337,6 +351,24 @@ class CfdDashboard extends Component {
 
       </div>
     );
+  }
+
+  getCfdState(isTaken, isSettled, isRefunded, contractEndBlock, currentBlockNumber) {
+    if (isSettled) {
+      return 'Settled'
+    } else if (isRefunded) {
+      return 'Refunded'
+    } else if (isTaken) {
+      console.log('currentBlockNumber', currentBlockNumber)
+      console.log('contractEndBlock', contractEndBlock)
+      if (currentBlockNumber < contractEndBlock) {
+        return 'Active'
+      } else {
+        return 'Finished'
+      }
+    } else {
+      return 'Open'
+    }
   }
 }
 
