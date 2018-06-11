@@ -22,6 +22,7 @@ class CfdDashboard extends Component {
       oracleOwner: 'Loading...',
       numberOfContracts: 'Loading...',
       contracts: [],
+      makeMakerAddress: '',
       makeAssetId: '',
       makePosition: '0',
       makeAmountEther: '',
@@ -34,14 +35,16 @@ class CfdDashboard extends Component {
     const cfdInstance = await getCfdInstance();
     const apoInstance = await getApoInstance();
     const currentBlockNumber = await web3.eth.getBlockNumber();
+    const accounts = await web3.eth.getAccounts();
 
     this.setState({
       web3: web3,
       currentBlockNumber: currentBlockNumber,
       cfdInstance: cfdInstance,
-      accounts: await web3.eth.getAccounts(),
+      accounts: accounts,
       oracleOwner: await apoInstance.owner.call(),
       numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString(),
+      makeMakerAddress: accounts[0],
       makeEndBlock: currentBlockNumber + 40 // Suggest Make end block to be current block plus 10 minutes of blocks (4 blocks per minute * 10 minutes)
     });
 
@@ -103,7 +106,7 @@ class CfdDashboard extends Component {
     this.setState({ message: 'Waiting for Make CFD Transaction to confirm...' });
 
     console.log('cfdInstance.makeCfd.estimateGas', await this.state.cfdInstance.makeCfd.estimateGas(
-      this.state.accounts[0],
+      this.state.makeMakerAddress,
       this.state.makeAssetId,
       this.state.makePosition,
       this.state.makeEndBlock,
@@ -111,7 +114,7 @@ class CfdDashboard extends Component {
     ));
 
     await this.state.cfdInstance.makeCfd(
-      this.state.accounts[0],
+      this.state.makeMakerAddress,
       this.state.makeAssetId,
       this.state.makePosition,
       this.state.makeEndBlock,
@@ -285,6 +288,13 @@ class CfdDashboard extends Component {
           <div className="pure-u-1">
             <form onSubmit={this.onMakeCfd} className="pure-form pure-form-stacked">
               <h2>Make Contract</h2>
+              <p>
+                <label>Maker Address: </label>
+                <input
+                  value={this.state.makeMakerAddress}
+                  onChange={event => this.setState({ makeMakerAddress: event.target.value })}
+                />
+              </p>
               <p>
                 <label>Asset ID: </label>
                 <input
