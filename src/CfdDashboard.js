@@ -368,6 +368,8 @@ class CfdDashboard extends Component {
       } else {
         return 'Finished'
       }
+    } else if (!isTaken && currentBlockNumber > contractEndBlock) {
+      return 'Expired'
     } else {
       return 'Open'
     }
