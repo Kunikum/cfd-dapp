@@ -3,6 +3,7 @@ import web3 from './utils/web3'
 import { getCfdInstance, getApoInstance } from './utils/ContractLoader'
 import { getSettlements } from './utils/CfdUtils'
 import CfdStatusPopup from './components/CfdStatusPopup'
+import TakeCfdPopup from './components/TakeCfdPopup'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -126,21 +127,24 @@ class CfdDashboard extends Component {
     });
   };
 
-  onTakeCfd = async (cfdId, event) => {
+  takeCfdHandler = async (cfdId, takerAddress, event) => {
+    console.log('cfdId', cfdId)
+    console.log('takerAddress', takerAddress)
+    console.log('event', event)
     event.preventDefault();
 
     const cfd = this.state.contracts.find((c) => { return c.id === cfdId; });
 
     console.log('cfdInstance.takeCfd.estimateGas', await this.state.cfdInstance.takeCfd.estimateGas(
       cfdId,
-      this.state.accounts[0],
+      takerAddress,
       { value: web3.utils.toWei(cfd.amount, 'ether'), from: this.state.accounts[0] }
     ));
 
     this.setState({ message: 'Waiting for Take CFD Transaction to confirm...' });
     await this.state.cfdInstance.takeCfd(
       cfdId,
-      this.state.accounts[0],
+      takerAddress,
       { value: web3.utils.toWei(cfd.amount, 'ether'), from: this.state.accounts[0] }
     );
 
@@ -236,7 +240,7 @@ class CfdDashboard extends Component {
             {props.data.status} <CfdStatusPopup cfd={props.data} />
           </td>
           <td>
-            <button onClick={(e) => this.onTakeCfd(props.data.id, e)} className="pure-button" disabled={disableTake}>Take</button>
+            <TakeCfdPopup takeCfdHandler={this.takeCfdHandler} cfdId={props.data.id} disabled={disableTake} />
             <button onClick={(e) => this.onSettleCfd(props.data.id, e)} className="pure-button" disabled={disableSettle}>Settle</button>
             <button onClick={(e) => this.onRefundCfd(props.data.id, e)} className="pure-button" disabled={disableRefund}>Refund</button>
           </td>
