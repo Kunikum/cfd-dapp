@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
 import Popover from '@material-ui/core/Popover'
 import Icon from '@material-ui/core/Icon'
 import ReactJson from 'react-json-view'
