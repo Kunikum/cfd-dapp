@@ -67,7 +67,8 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "node scripts/test.js --env=jsdom"
+    "test": "node scripts/test.js --env=jsdom",
+    "deploy-web": "scp -r build_webpack/* kunik@cfd.kunikum.com:/var/www/cfd.kunikum.com/html/"
   },
   "jest": {
     "collectCoverageFrom": [
