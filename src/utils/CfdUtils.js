@@ -1,4 +1,4 @@
-export const getSettlements = (cfdInstance) => {
+export function getSettlements(cfdInstance) {
   return new Promise(function (resolve, reject) {
     cfdInstance.LogCfdSettled({}, { fromBlock: 0, toBlock: 'latest' }).get(
       (error, settlements) => {

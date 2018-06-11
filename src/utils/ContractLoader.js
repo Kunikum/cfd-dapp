@@ -4,7 +4,7 @@ import contract from 'truffle-contract';
 import web3 from './web3';
 
 // Loads the truffle-contract instance of the ContractForDifference 
-export const getCfdInstance = async () => {
+export async function getCfdInstance() {
     const cfd = contract(ContractForDifference);
     cfd.setProvider(web3.currentProvider);
     const cfdInstance = await cfd.deployed();
@@ -12,7 +12,7 @@ export const getCfdInstance = async () => {
 }
 
 // Loads the truffle-contract instance of the AssetPriceOracle
-export const getApoInstance = async () => {
+export async function getApoInstance() {
     const apo = contract(AssetPriceOracle);
     apo.setProvider(web3.currentProvider);
     const apoInstance = await apo.deployed();

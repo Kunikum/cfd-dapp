@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import web3 from './utils/web3'
 import { getCfdInstance, getApoInstance } from './utils/ContractLoader'
 import { getSettlements } from './utils/CfdUtils'
+import CfdStatusPopup from './components/CfdStatusPopup'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -48,12 +49,12 @@ class CfdDashboard extends Component {
     let contracts = [];
     for (let i = this.state.numberOfContracts - 1; i >= 0; i--) {
       const contract = await cfdInstance.getCfd.call(i);
-      
+
       const contractEndBlock = contract[7].toNumber();
       const isTaken = contract[8];
       const isSettled = contract[9];
       const isRefunded = contract[10];
-      
+
 
       contracts.unshift({
         id: i,
@@ -80,7 +81,19 @@ class CfdDashboard extends Component {
       });
     }
 
-    console.log('await getSettlements():', await getSettlements(cfdInstance));
+    // Add settlement info (if available) to contracts
+    const settlements = await getSettlements(cfdInstance);
+    console.log('settlements:', settlements);
+    this.setState({
+      contracts: contracts.map(contract => {
+        const settlement = settlements.find((s) => { return s.cfdId === contract.id });
+        if (settlement) {
+          return { ...contract, settlement: settlement }
+        } else {
+          return contract
+        }
+      })
+    });
   }
 
   onMakeCfd = async (event) => {
@@ -205,16 +218,10 @@ class CfdDashboard extends Component {
             {props.data.assetId}
           </td>
           <td title={props.data.maker.addr}>
-            {props.data.maker.addr.substring(0, 8) + "..."}
-          </td>
-          <td>
-            {props.data.maker.position}
+            {props.data.maker.addr.substring(0, 8) + "..."} {props.data.maker.position}
           </td>
           <td title={props.data.taker.addr}>
-            {props.data.taker.addr ? props.data.taker.addr.substring(0, 8) + "..." : ''}
-          </td>
-          <td>
-            {props.data.taker.position}
+            {props.data.taker.addr ? props.data.taker.addr.substring(0, 8) + "..." : ''} {props.data.taker.position}
           </td>
           <td>
             {props.data.amount}
@@ -226,7 +233,7 @@ class CfdDashboard extends Component {
             {props.data.contractEndBlock}
           </td>
           <td>
-            {props.data.status}
+            {props.data.status} <CfdStatusPopup cfd={props.data} />
           </td>
           <td>
             <button onClick={(e) => this.onTakeCfd(props.data.id, e)} className="pure-button" disabled={disableTake}>Take</button>
@@ -323,12 +330,10 @@ class CfdDashboard extends Component {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Asset ID</th>
-                  <th>Maker Addr</th>
-                  <th>MPosition</th>
-                  <th>Taker Addr</th>
-                  <th>TPosition</th>
-                  <th>Deposit (Ether)</th>
+                  <th>Asset</th>
+                  <th>Maker</th>
+                  <th>Taker</th>
+                  <th>Deposit</th>
                   <th>Start Block</th>
                   <th>End Block</th>
                   <th>Status</th>
@@ -348,7 +353,6 @@ class CfdDashboard extends Component {
         <div className="buttom-bar">
           <div>Status: {this.state.message}</div>
         </div>
-
       </div>
     );
   }
@@ -359,8 +363,6 @@ class CfdDashboard extends Component {
     } else if (isRefunded) {
       return 'Refunded'
     } else if (isTaken) {
-      console.log('currentBlockNumber', currentBlockNumber)
-      console.log('contractEndBlock', contractEndBlock)
       if (currentBlockNumber < contractEndBlock) {
         return 'Active'
       } else {
