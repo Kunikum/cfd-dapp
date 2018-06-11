@@ -25,13 +25,13 @@ module.exports = {
       provider: new HDWalletProvider(mnemonic, "https://ropsten.infura.io/"+infura_apikey),
       network_id: 3,
       gas: 4500000, // Current Ropsten gas limit. See https://ropsten.etherscan.io/block/3141628
-      gasPrice: 111100000000 // 11.1 GWei - based on the lower end of current txs getting into blocks currently on Ropsten.
+      gasPrice: 11100000000 // 11.1 GWei - based on the middle price of current txs getting into blocks currently on Ropsten.
     }
   },
   solc: {
     optimizer: {
       enabled: true, // Disabled by default! But we want smaller contract size, so we enable it. See release notes here: https://github.com/trufflesuite/truffle/releases/tag/v4.0.0
-      runs: 200 // Informs optimizer off how to balance trade-off between contract size (and therefor deploy gas cost) and contract function execution cost.
+      runs: 200 // Informs the optimizer how to balance the trade-off between contract size (and therefor deploy gas cost) and contract function execution cost.
     }
   }
 };
