@@ -4,6 +4,7 @@ import { getCfdInstance, getApoInstance } from './utils/ContractLoader'
 import { getSettlements } from './utils/CfdUtils'
 import CfdStatusPopup from './components/CfdStatusPopup'
 import TakeCfdPopup from './components/TakeCfdPopup'
+import CfdMakeForm from './components/CfdMakeForm'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -22,11 +23,6 @@ class CfdDashboard extends Component {
       oracleOwner: 'Loading...',
       numberOfContracts: 'Loading...',
       contracts: [],
-      makeMakerAddress: '',
-      makeAssetId: '',
-      makePosition: '0',
-      makeAmountEther: '',
-      makeEndBlock: '',
       message: 'Ready to make a transaction :)'
     }
   }
@@ -43,9 +39,7 @@ class CfdDashboard extends Component {
       cfdInstance: cfdInstance,
       accounts: accounts,
       oracleOwner: await apoInstance.owner.call(),
-      numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString(),
-      makeMakerAddress: accounts[0],
-      makeEndBlock: currentBlockNumber + 40 // Suggest Make end block to be current block plus 10 minutes of blocks (4 blocks per minute * 10 minutes)
+      numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString()
     });
 
     // Get array of array contracts and translate them to array of objects.
@@ -99,36 +93,6 @@ class CfdDashboard extends Component {
       })
     });
   }
-
-  onMakeCfd = async (event) => {
-    event.preventDefault();
-
-    this.setState({ message: 'Waiting for Make CFD Transaction to confirm...' });
-
-    console.log('cfdInstance.makeCfd.estimateGas', await this.state.cfdInstance.makeCfd.estimateGas(
-      this.state.makeMakerAddress,
-      this.state.makeAssetId,
-      this.state.makePosition,
-      this.state.makeEndBlock,
-      { value: web3.utils.toWei(this.state.makeAmountEther, 'ether'), from: this.state.accounts[0] }
-    ));
-
-    await this.state.cfdInstance.makeCfd(
-      this.state.makeMakerAddress,
-      this.state.makeAssetId,
-      this.state.makePosition,
-      this.state.makeEndBlock,
-      { value: web3.utils.toWei(this.state.makeAmountEther, 'ether'), from: this.state.accounts[0] }
-    );
-
-    this.setState({
-      message: '\'Make CFD\' Transaction successful!',
-      makeAssetId: '',
-      makePosition: 0,
-      makeAmountEther: '',
-      makeEndBlock: ''
-    });
-  };
 
   takeCfdHandler = async (cfdId, takerAddress, event) => {
     console.log('cfdId', cfdId)
@@ -286,56 +250,8 @@ class CfdDashboard extends Component {
           </div>
 
           <div className="pure-u-1">
-            <form onSubmit={this.onMakeCfd} className="pure-form pure-form-stacked">
-              <h2>Make Contract</h2>
-              <p>
-                <label>Maker Address: </label>
-                <input
-                  value={this.state.makeMakerAddress}
-                  onChange={event => this.setState({ makeMakerAddress: event.target.value })}
-                />
-              </p>
-              <p>
-                <label>Asset ID: </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  onKeyPress={event => event.charCode >= 48 && event.charCode <= 57}
-                  value={this.state.makeAssetId}
-                  onChange={event => this.setState({ makeAssetId: event.target.value })}
-                />
-              </p>
-              <p>
-                <label>Position: </label>
-                <select
-                  value={this.state.makePosition}
-                  onChange={event => this.setState({ makePosition: event.target.value })}
-                >
-                  <option value="0">Long</option>
-                  <option value="1">Short</option>
-                </select>
-              </p>
-              <p>
-                <label>Amount of Ether: </label>
-                <input
-                  value={this.state.makeAmountEther}
-                  onChange={event => this.setState({ makeAmountEther: event.target.value })}
-                />
-              </p>
-              <p>
-                <label>End Block: </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  onKeyPress={event => event.charCode >= 48 && event.charCode <= 57}
-                  value={this.state.makeEndBlock}
-                  onChange={event => this.setState({ makeEndBlock: event.target.value })}
-                />
-              </p>
-              <button className="pure-button pure-button-primary">Make Contract for Difference</button>
-            </form>
+            <h2>Make Contract</h2>
+            <CfdMakeForm />
           </div>
 
           <div className="pure-u-1">

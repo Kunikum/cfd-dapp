@@ -26,3 +26,11 @@ export function getSettlements(cfdInstance) {
     )
   })
 }
+
+export const assets = [
+  { value: 0, label: 'TSLA' },
+  { value: 1, label: 'FB' },
+  { value: 2, label: 'AMZN' },
+  { value: 3, label: 'AAPL' },
+  { value: 4, label: 'GOOGL' }
+]

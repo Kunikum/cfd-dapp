@@ -83,7 +83,7 @@ class TakeCfdPopup extends Component {
               onChange={event => this.setState({ takerAddress: event.target.value })}
               validators={['isEthereumAddress']}
               errorMessages={['Not a valid Ethereum address']}
-
+              helperText="Please input makers Ethereum Address"
             />
             <Button type="submit" variant="contained" className={classes.button}>Take</Button>
           </ValidatorForm>
