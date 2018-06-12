@@ -9,6 +9,7 @@ export function getSettlements(cfdInstance) {
             settlements.map(
               (settlement) => {
                 return {
+                  transaction: settlement.transactionHash,
                   cfdId: settlement.args.cfdId.toNumber(),
                   makerAddress: settlement.args.makerAddress,
                   takerAddress: settlement.args.takerAddress,
