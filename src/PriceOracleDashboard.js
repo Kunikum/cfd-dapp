@@ -106,7 +106,7 @@ class PriceOracleDashboard extends Component {
                 </tr>
               </thead>
               <tbody>
-                {this.state.priceRecords.map(record => { return <PriceRecordRow data={record} key={record.assetId.toString() + record.blockNumber.toString()} /> }) /* 'key' is just to stop the React warning of missing unique key */}
+                {this.state.priceRecords.map(record => { return <PriceRecordRow data={record} key={record.assetId.toString() + record.blockNumber.toString() + record.price.toString()} /> }) /* 'key' is just to stop the React warning of missing unique key */}
               </tbody>
             </table>
           </div>
