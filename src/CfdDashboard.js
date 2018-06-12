@@ -207,7 +207,7 @@ class CfdDashboard extends Component {
             {props.data.status} <CfdStatusPopup cfd={props.data} />
           </td>
           <td>
-            <TakeCfdPopup takeCfdHandler={this.takeCfdHandler} cfdId={props.data.id} disabled={disableTake} />
+            <TakeCfdPopup takeCfdHandler={this.takeCfdHandler} cfdId={props.data.id} takerAddress={this.state.accounts[0]} disabled={disableTake} />
             <button onClick={(e) => this.onSettleCfd(props.data.id, e)} className="pure-button" disabled={disableSettle}>Settle</button>
             <button onClick={(e) => this.onRefundCfd(props.data.id, e)} className="pure-button" disabled={disableRefund}>Refund</button>
           </td>

@@ -30,7 +30,7 @@ class TakeCfdPopup extends Component {
     this.state = {
       anchorEl: null,
       cfdId: props.cfdId,
-      takerAddress: ''
+      takerAddress: props.takerAddress
     }
   }
 
@@ -50,7 +50,7 @@ class TakeCfdPopup extends Component {
   handleClose = () => {
     this.setState({
       anchorEl: null,
-      takerAddress: ''
+      takerAddress: this.props.takerAddress
     });
   };
 
