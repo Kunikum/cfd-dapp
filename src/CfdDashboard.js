@@ -46,6 +46,22 @@ class CfdDashboard extends Component {
       numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString()
     });
 
+    // Get price quotes and translate them to array of objects
+    let priceRecordObjects = [];
+
+    apoInstance.AssetPriceRecorded({}, { fromBlock: 0, toBlock: 'latest' }).get(((error, result) => {
+      result.forEach(assetPrice => {
+        const transactionBlockNumber = assetPrice.blockNumber;
+        const assetId = assetPrice.args.assetId;
+        const blockNumber = assetPrice.args.blockNumber;
+        const price = new BigNumber(assetPrice.args.price).dividedBy('1e18');
+        priceRecordObjects.push({ transactionBlockNumber,assetId, blockNumber, price });
+      });
+      this.setState({
+        priceRecords: priceRecordObjects
+      });
+    }));
+
     // Get array of array contracts and translate them to array of objects.
     // We do this in the order of highest to lowest ID, so we get newest contracts loaded first.
     let contracts = [];
@@ -95,22 +111,6 @@ class CfdDashboard extends Component {
         }
       })
     });
-
-    // Get price quotes and translate them to array of objects
-    let priceRecordObjects = [];
-
-    apoInstance.AssetPriceRecorded({}, { fromBlock: 0, toBlock: 'latest' }).get(((error, result) => {
-      result.forEach(assetPrice => {
-        const transactionBlockNumber = assetPrice.blockNumber;
-        const assetId = assetPrice.args.assetId;
-        const blockNumber = assetPrice.args.blockNumber;
-        const price = new BigNumber(assetPrice.args.price).dividedBy('1e18');
-        priceRecordObjects.push({ transactionBlockNumber,assetId, blockNumber, price });
-      });
-      this.setState({
-        priceRecords: priceRecordObjects
-      });
-    }));
   }
 
   takeCfdHandler = async (cfdId, takerAddress, event) => {
