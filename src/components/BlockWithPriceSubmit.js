@@ -38,7 +38,7 @@ class BlockWithPriceSubmit extends Component {
     // Set inputPrice and blockPrice to the newest price of the assetId+blockNo-combination prices.
     if (this.state.priceRecords) {
       const priceRecords = this.state.priceRecords.filter((record) => { 
-        return record.assetId == this.state.assetId && record.blockNumber == this.state.blockNo;
+        return record.assetId.toNumber() === this.state.assetId && record.blockNumber.toNumber() === this.state.blockNo;
       })
       if (priceRecords && priceRecords.length) {
         const newestPriceRecord = priceRecords.reduce((prev, current) => (prev.transactionBlockNumber > current.transactionBlockNumber) ? prev : current)
