@@ -37,13 +37,9 @@ export const assets = [
 ]
 
 export function assetIdToString(assetId) {
-  console.log('assetId', assetId)
-  console.log('typeof assetId 1', typeof assetId)
   if (typeof assetId !== String) {
     assetId = assetId.toString();
   }
-  console.log('assetId', assetId)
-  console.log('typeof assetId 2', typeof assetId)
   const asset = assets.find(asset => asset.value === assetId)
   return asset ? asset.label : assetId
 };
