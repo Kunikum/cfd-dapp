@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { assets } from '../utils/CfdUtils'
+import { assetIdToString } from '../utils/CfdUtils'
 import { BigNumber } from 'bignumber.js';
 import { withStyles } from '@material-ui/core/styles'
 import Popover from '@material-ui/core/Popover'
@@ -64,11 +64,6 @@ class BlockWithPriceSubmit extends Component {
     });
   };
 
-  getAssetLabel = (assetId) => {
-    const asset = assets.find((asset) => asset.value === assetId);
-    return asset ? asset.label : assetId
-  };
-
   registerPrice = async (event) => {
     event.preventDefault();
 
@@ -113,7 +108,7 @@ class BlockWithPriceSubmit extends Component {
             horizontal: "left"
           }}
         >
-          <Typography>Asset: {this.getAssetLabel(this.state.assetId)} BlockNo: {this.state.blockNo}</Typography>
+          <Typography>Asset: {assetIdToString(this.state.assetId)} BlockNo: {this.state.blockNo}</Typography>
           <form onSubmit={this.registerPrice}>
             <TextField
               className={classes.textField}

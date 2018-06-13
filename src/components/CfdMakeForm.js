@@ -137,7 +137,7 @@ class CfdMakeForm extends Component {
           margin="normal"
         >
           {assets.map(asset => (
-            <MenuItem key={asset.value} value={asset.value.toString()}>
+            <MenuItem key={asset.value} value={asset.value}>
               {asset.label}
             </MenuItem>
           ))}

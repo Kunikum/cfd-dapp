@@ -29,9 +29,21 @@ export function getSettlements(cfdInstance) {
 }
 
 export const assets = [
-  { value: 0, label: 'TSLA' },
-  { value: 1, label: 'FB' },
-  { value: 2, label: 'AMZN' },
-  { value: 3, label: 'AAPL' },
-  { value: 4, label: 'GOOGL' }
+  { value: '0', label: 'TSLA' },
+  { value: '1', label: 'FB' },
+  { value: '2', label: 'AMZN' },
+  { value: '3', label: 'AAPL' },
+  { value: '4', label: 'GOOGL' }
 ]
+
+export function assetIdToString(assetId) {
+  console.log('assetId', assetId)
+  console.log('typeof assetId 1', typeof assetId)
+  if (typeof assetId !== String) {
+    assetId = assetId.toString();
+  }
+  console.log('assetId', assetId)
+  console.log('typeof assetId 2', typeof assetId)
+  const asset = assets.find(asset => asset.value === assetId)
+  return asset ? asset.label : assetId
+};

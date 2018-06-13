@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import web3 from './utils/web3'
 import { BigNumber } from 'bignumber.js';
 import { getCfdInstance, getApoInstance } from './utils/ContractLoader'
-import { getSettlements } from './utils/CfdUtils'
+import { getSettlements, assetIdToString } from './utils/CfdUtils'
 import CfdStatusPopup from './components/CfdStatusPopup'
 import TakeCfdPopup from './components/TakeCfdPopup'
 import CfdMakeForm from './components/CfdMakeForm'
@@ -205,13 +205,13 @@ class CfdDashboard extends Component {
             {props.data.id}
           </td>
           <td>
-            {props.data.assetId}
+            {assetIdToString(props.data.assetId)}
           </td>
           <td title={props.data.maker.addr}>
-            {props.data.maker.addr.substring(0, 8) + "..."} {props.data.maker.position}
+            {props.data.maker.addr.substring(0, 8) + "..."} (<b>{props.data.maker.position}</b>)
           </td>
           <td title={props.data.taker.addr}>
-            {props.data.taker.addr ? props.data.taker.addr.substring(0, 8) + "..." : ''} {props.data.taker.position}
+            {props.data.taker.addr ? props.data.taker.addr.substring(0, 8) + "..." : ''} <b>{props.data.taker.position ? '(' + props.data.taker.position + ')' : ''}</b>
           </td>
           <td>
             {props.data.amount}
