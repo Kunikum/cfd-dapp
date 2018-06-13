@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
 import web3 from './utils/web3'
+import { BigNumber } from 'bignumber.js';
 import { getCfdInstance, getApoInstance } from './utils/ContractLoader'
 import { getSettlements } from './utils/CfdUtils'
 import CfdStatusPopup from './components/CfdStatusPopup'
 import TakeCfdPopup from './components/TakeCfdPopup'
 import CfdMakeForm from './components/CfdMakeForm'
+import BlockWithPriceSubmit from './components/BlockWithPriceSubmit'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -19,6 +21,7 @@ class CfdDashboard extends Component {
       web3: null,
       currentBlockNumber: 0,
       cfdInstance: null,
+      apoInstance: null,
       accounts: 'Loading...',
       oracleOwner: 'Loading...',
       numberOfContracts: 'Loading...',
@@ -38,6 +41,7 @@ class CfdDashboard extends Component {
       currentBlockNumber: currentBlockNumber,
       cfdInstance: cfdInstance,
       accounts: accounts,
+      apoInstance: apoInstance,
       oracleOwner: await apoInstance.owner.call(),
       numberOfContracts: (await cfdInstance.numberOfContracts.call()).toString()
     });
@@ -81,7 +85,6 @@ class CfdDashboard extends Component {
 
     // Add settlement info (if available) to contracts
     const settlements = await getSettlements(cfdInstance);
-    console.log('settlements:', settlements);
     this.setState({
       contracts: contracts.map(contract => {
         const settlement = settlements.find((s) => { return s.cfdId === contract.id });
@@ -92,6 +95,22 @@ class CfdDashboard extends Component {
         }
       })
     });
+
+    // Get price quotes and translate them to array of objects
+    let priceRecordObjects = [];
+
+    apoInstance.AssetPriceRecorded({}, { fromBlock: 0, toBlock: 'latest' }).get(((error, result) => {
+      result.forEach(assetPrice => {
+        const transactionBlockNumber = assetPrice.blockNumber;
+        const assetId = assetPrice.args.assetId;
+        const blockNumber = assetPrice.args.blockNumber;
+        const price = new BigNumber(assetPrice.args.price).dividedBy('1e18');
+        priceRecordObjects.push({ transactionBlockNumber,assetId, blockNumber, price });
+      });
+      this.setState({
+        priceRecords: priceRecordObjects
+      });
+    }));
   }
 
   takeCfdHandler = async (cfdId, takerAddress, event) => {
@@ -198,10 +217,27 @@ class CfdDashboard extends Component {
             {props.data.amount}
           </td>
           <td>
-            {props.data.contractStartBlock !== 0 ? props.data.contractStartBlock : ''}
+            {props.data.contractStartBlock !== 0 ? (
+              <BlockWithPriceSubmit
+                apoInstance={this.state.apoInstance}
+                priceRecords={this.state.priceRecords}
+                currentAccount={this.state.accounts[0]}
+                assetId={props.data.assetId}
+                blockNo={props.data.contractStartBlock}
+              />
+            ) : (
+                ''
+              )
+            }
           </td>
           <td>
-            {props.data.contractEndBlock}
+            <BlockWithPriceSubmit
+              apoInstance={this.state.apoInstance}
+              priceRecords={this.state.priceRecords}
+              currentAccount={this.state.accounts[0]}
+              assetId={props.data.assetId}
+              blockNo={props.data.contractEndBlock}
+            />
           </td>
           <td>
             {props.data.status} <CfdStatusPopup cfd={props.data} />
@@ -217,7 +253,6 @@ class CfdDashboard extends Component {
 
     return (
       <div>
-
         <div className="pure-g">
           <div className="pure-u-1">
             <h2>Contract general properties</h2>
