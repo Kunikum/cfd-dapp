@@ -6,6 +6,9 @@ contract ContractForDifference {
 
     enum Position { Long, Short }
     
+    /**
+     * A party to the contract. Either the maker or the taker.
+     */
     struct Party {
         address addr;
         Position position;
@@ -17,8 +20,8 @@ contract ContractForDifference {
 
         uint256 assetId;
         uint256 amount; // in Wei.
-        uint256 contractStartBlock; // in Unix time
-        uint256 contractEndBlock; // in Unix time
+        uint256 contractStartBlock; // Block number
+        uint256 contractEndBlock; // Block number
 
         // CFD state variables
         bool isTaken;
@@ -26,7 +29,7 @@ contract ContractForDifference {
         bool isRefunded;
     }
 
-    int256 public leverage = 1;
+    int256 public leverage = 1; // Global leverage of the CFD contract.
     AssetPriceOracle public priceOracle;
 
     mapping(uint256 => Cfd) public contracts;
@@ -66,11 +69,11 @@ contract ContractForDifference {
     address indexed makerAddress,
     uint256 amount);
 
-    event Debug (
-        string description,
-        uint256 uintValue,
-        int256 intValue
-    );
+    // event Debug (
+    //     string description,
+    //     uint256 uintValue,
+    //     int256 intValue
+    // );
 
     constructor(address priceOracleAddress) public {
         priceOracle = AssetPriceOracle(priceOracleAddress);
