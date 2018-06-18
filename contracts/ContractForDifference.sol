@@ -18,10 +18,10 @@ contract ContractForDifference {
         Party maker;
         Party taker;
 
-        uint256 assetId;
-        uint256 amount; // in Wei.
-        uint256 contractStartBlock; // Block number
-        uint256 contractEndBlock; // Block number
+        uint128 assetId;
+        uint128 amount; // in Wei.
+        uint128 contractStartBlock; // Block number
+        uint128 contractEndBlock; // Block number
 
         // CFD state variables
         bool isTaken;
@@ -29,50 +29,50 @@ contract ContractForDifference {
         bool isRefunded;
     }
 
-    int256 public leverage = 1; // Global leverage of the CFD contract.
+    uint128 public leverage = 1; // Global leverage of the CFD contract.
     AssetPriceOracle public priceOracle;
 
-    mapping(uint256 => Cfd) public contracts;
-    uint256                 public numberOfContracts;
+    mapping(uint128 => Cfd) public contracts;
+    uint128                 public numberOfContracts;
 
     event LogMakeCfd (
-    uint256 indexed cfdId, 
+    uint128 indexed cfdId, 
     address indexed makerAddress, 
     Position indexed makerPosition,
-    uint256 assetId,
-    uint256 amount,
-    uint256 contractEndBlock);
+    uint128 assetId,
+    uint128 amount,
+    uint128 contractEndBlock);
 
     event LogTakeCfd (
-    uint256 indexed cfdId,
+    uint128 indexed cfdId,
     address indexed makerAddress,
     Position makerPosition,
     address indexed takerAddress,
     Position takerPosition,
-    uint256 assetId,
-    uint256 amount,
-    uint256 contractStartBlock,
-    uint256 contractEndBlock);
+    uint128 assetId,
+    uint128 amount,
+    uint128 contractStartBlock,
+    uint128 contractEndBlock);
 
     event LogCfdSettled (
-    uint256 indexed cfdId,
+    uint128 indexed cfdId,
     address indexed makerAddress,
     address indexed takerAddress,
-    uint256 amount,
-    uint256 startPrice,
-    uint256 endPrice,
-    uint256 makerSettlement,
-    uint256 takerSettlement);
+    uint128 amount,
+    uint128 startPrice,
+    uint128 endPrice,
+    uint128 makerSettlement,
+    uint128 takerSettlement);
 
     event LogCfdRefunded (
-    uint256 indexed cfdId,
+    uint128 indexed cfdId,
     address indexed makerAddress,
-    uint256 amount);
+    uint128 amount);
 
     // event Debug (
     //     string description,
-    //     uint256 uintValue,
-    //     int256 intValue
+    //     uint128 uintValue,
+    //     int128 intValue
     // );
 
     constructor(address priceOracleAddress) public {
@@ -81,23 +81,23 @@ contract ContractForDifference {
 
     function makeCfd(
         address makerAddress,
-        uint256 assetId,
+        uint128 assetId,
         Position makerPosition,
-        uint256 contractEndBlock
+        uint128 contractEndBlock
         )
         public
         payable
-        returns (uint256)
+        returns (uint128)
     {
         require(contractEndBlock > block.number); // Contract end block must be after current block.
         require(msg.value > 0); // Contract Wei amount must be more than zero - contracts for zero Wei does not make sense.
         require(makerAddress != address(0)); // Maker must provide a non-zero address.
         
-        uint256 contractId = numberOfContracts;
+        uint128 contractId = numberOfContracts;
 
         contracts[contractId].maker = Party(makerAddress, makerPosition);
         contracts[contractId].assetId = assetId;
-        contracts[contractId].amount = msg.value;
+        contracts[contractId].amount = uint128(msg.value);
         contracts[contractId].contractEndBlock = contractEndBlock;
         numberOfContracts++;
         
@@ -114,11 +114,11 @@ contract ContractForDifference {
     }
 
     function getCfd(
-        uint256 cfdId
+        uint128 cfdId
         ) 
         public 
         view 
-        returns (address makerAddress, Position makerPosition, address takerAddress, Position takerPosition, uint256 assetId, uint256 amount, uint256 startTime, uint256 endTime, bool isTaken, bool isSettled, bool isRefunded)
+        returns (address makerAddress, Position makerPosition, address takerAddress, Position takerPosition, uint128 assetId, uint128 amount, uint128 startTime, uint128 endTime, bool isTaken, bool isSettled, bool isRefunded)
         {
         Cfd storage cfd = contracts[cfdId];
         return (
@@ -137,7 +137,7 @@ contract ContractForDifference {
     }
 
     function takeCfd(
-        uint256 cfdId, 
+        uint128 cfdId, 
         address takerAddress
         ) 
         public
@@ -158,7 +158,7 @@ contract ContractForDifference {
         cfd.taker.addr = takerAddress;
         // Make taker position the inverse of maker position
         cfd.taker.position = cfd.maker.position == Position.Long ? Position.Short : Position.Long;
-        cfd.contractStartBlock = block.number;
+        cfd.contractStartBlock = uint128(block.number);
         cfd.isTaken = true;
 
         emit LogTakeCfd(
@@ -177,7 +177,7 @@ contract ContractForDifference {
     }
 
     function settleCfd(
-        uint256 cfdId
+        uint128 cfdId
         )
         public
         returns (bool success) {
@@ -191,16 +191,16 @@ contract ContractForDifference {
         require(cfd.taker.addr != address(0));         // Contract must have a taker address.
 
         // Get relevant variables
-        uint256 amount = cfd.amount;
-        uint256 startPrice = priceOracle.getAssetPrice(cfd.assetId, cfd.contractStartBlock);
-        uint256 endPrice = priceOracle.getAssetPrice(cfd.assetId, cfd.contractEndBlock);
+        uint128 amount = cfd.amount;
+        uint128 startPrice = priceOracle.getAssetPrice(cfd.assetId, cfd.contractStartBlock);
+        uint128 endPrice = priceOracle.getAssetPrice(cfd.assetId, cfd.contractEndBlock);
 
         // Payout settlements to maker and taker
-        uint256 makerSettlement = getSettlementAmount(amount, startPrice, endPrice, cfd.maker.position);
+        uint128 makerSettlement = getSettlementAmount(amount, startPrice, endPrice, cfd.maker.position);
         if (makerSettlement > 0) { 
-            cfd.maker.addr.transfer(makerSettlement); 
+            cfd.maker.addr.transfer(makerSettlement);
         }
-        uint256 takerSettlement = getSettlementAmount(amount, startPrice, endPrice, cfd.taker.position);
+        uint128 takerSettlement = getSettlementAmount(amount, startPrice, endPrice, cfd.taker.position);
         if (takerSettlement > 0) {
             cfd.taker.addr.transfer(takerSettlement);
         }
@@ -223,21 +223,22 @@ contract ContractForDifference {
     }
 
     function getSettlementAmount(
-        uint256 amountUInt,
-        uint256 entryPriceUInt,
-        uint256 exitPriceUInt,
+        uint128 amountUInt,
+        uint128 entryPriceUInt,
+        uint128 exitPriceUInt,
         Position position
     )
     public
     view
-    returns (uint256) {
+    returns (uint128) {
         require(position == Position.Long || position == Position.Short);
 
+        if (entryPriceUInt == exitPriceUInt) {return amountUInt;} // If price didn't change, settle for equal amount to long and short.
+
+        // Cast uint128 to int256 to support negative numbers and increase over- and underflow limits
         int256 entryPrice = int256(entryPriceUInt);
         int256 exitPrice = int256(exitPriceUInt);
         int256 amount = int256(amountUInt);
-        
-        if (entryPrice == exitPrice) {return amountUInt;} // If price didn't change, settle for equal amount to long and short.
 
         // Price diff calc depends on which position we are calculating settlement for.
         int256 priceDiff = position == Position.Long ? (exitPrice - entryPrice) : (entryPrice - exitPrice);
@@ -247,19 +248,19 @@ contract ContractForDifference {
         } else if (settlement > amount * 2) {
             return amountUInt * 2; // Calculated settlement was more than the total deposits, so settle for the total deposits.
         } else {
-            return uint256(settlement); // Settlement was more than zero and less than sum of deposit amounts, so we can pay it out as is.
+            return uint128(settlement); // Settlement was more than zero and less than sum of deposit amounts, so we can pay it out as is.
         }
     }
 
     function refundCfd(
-        uint256 cfdId
+        uint128 cfdId
     )
     public
     returns (bool success) {
         Cfd storage cfd = contracts[cfdId];
         require(!cfd.isSettled);                       // Contract must not be settled already.
         require(!cfd.isTaken);                         // Contract must not be taken.
-        require(cfd.maker.addr == msg.sender);         // Function caller must be the contract maker
+        require(cfd.maker.addr == msg.sender);         // Function caller must be the contract maker or contract Owner
 
         cfd.maker.addr.transfer(cfd.amount);
         cfd.isRefunded = true;
