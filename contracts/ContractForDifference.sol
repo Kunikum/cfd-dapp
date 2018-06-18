@@ -233,7 +233,13 @@ contract ContractForDifference {
     returns (uint128) {
         require(position == Position.Long || position == Position.Short);
 
-        if (entryPriceUInt == exitPriceUInt) {return amountUInt;} // If price didn't change, settle for equal amount to long and short.
+        // If price didn't change, settle for equal amount to long and short.
+        if (entryPriceUInt == exitPriceUInt) {return amountUInt;}
+
+        // If entry price is 0 and exit price is more than 0, all must go to long position and nothing to short.
+        if (entryPriceUInt == 0 && exitPriceUInt > 0) {
+            return position == Position.Long ? amountUInt * 2 : 0;
+        }
 
         // Cast uint128 to int256 to support negative numbers and increase over- and underflow limits
         int256 entryPrice = int256(entryPriceUInt);
@@ -242,9 +248,9 @@ contract ContractForDifference {
 
         // Price diff calc depends on which position we are calculating settlement for.
         int256 priceDiff = position == Position.Long ? (exitPrice - entryPrice) : (entryPrice - exitPrice);
-        int256 settlement = amount + priceDiff * amount * leverage / entryPrice;
+        int256 settlement = amount + (priceDiff * amount * leverage / entryPrice);
         if (settlement < 0) {
-            return 0; // Calculated settlement was negative, but a party can't be charged more than his deposit.
+            return 0; // Calculated settlement was negative. But a party can't be lose more than his deposit, so he just gets 0 back.
         } else if (settlement > amount * 2) {
             return amountUInt * 2; // Calculated settlement was more than the total deposits, so settle for the total deposits.
         } else {
