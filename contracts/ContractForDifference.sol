@@ -1,8 +1,10 @@
 pragma solidity 0.4.24;
 
 import "./AssetPriceOracle.sol";
+import "./lib/SafeMath.sol";
 
 contract ContractForDifference {
+    using SafeMath for int256;
 
     enum Position { Long, Short }
     
@@ -247,8 +249,8 @@ contract ContractForDifference {
         int256 amount = int256(amountUInt);
 
         // Price diff calc depends on which position we are calculating settlement for.
-        int256 priceDiff = position == Position.Long ? (exitPrice - entryPrice) : (entryPrice - exitPrice);
-        int256 settlement = amount + (priceDiff * amount * leverage / entryPrice);
+        int256 priceDiff = position == Position.Long ? exitPrice.sub(entryPrice) : entryPrice.sub(exitPrice);
+        int256 settlement = amount.add(priceDiff.mul(amount).mul(leverage).div(entryPrice));
         if (settlement < 0) {
             return 0; // Calculated settlement was negative. But a party can't be lose more than his deposit, so he just gets 0 back.
         } else if (settlement > amount * 2) {
