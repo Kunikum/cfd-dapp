@@ -137,24 +137,24 @@ class CfdDashboard extends Component {
     this.setState({ message: '\'Take CFD\' Transaction successful!' });
   };
 
-  onSettleCfd = async (cfdId, event) => {
+  onSettleAndWithdrawCfd = async (cfdId, event) => {
     event.preventDefault();
 
-    console.log('onSettleCfd cfdId', cfdId);
+    console.log('onSettleAndWithdrawCfd cfdId', cfdId);
 
-    console.log('cfdInstance.settleCfd.estimateGas', await this.state.cfdInstance.settleCfd.estimateGas(
+    console.log('cfdInstance.settleCfd.estimateGas', await this.state.cfdInstance.settleAndWithdrawCfd.estimateGas(
       cfdId,
       { from: this.state.accounts[0] }
     ));
 
     this.setState({ message: 'Waiting for Settle CFD Transaction to confirm...' });
 
-    const settleCfdTx = await this.state.cfdInstance.settleCfd(
+    const settleAndWithdrawCfdTx = await this.state.cfdInstance.settleAndWithdrawCfd(
       cfdId,
       { from: this.state.accounts[0] }
     );
 
-    const settlement = settleCfdTx.logs[0].args;
+    const settlement = settleAndWithdrawCfdTx.logs[0].args;
     console.log('Settled CFD:', {
       cfdId: settlement.cfdId.toNumber(),
       amount: settlement.amount.dividedBy('1e18').toNumber(),
@@ -244,7 +244,7 @@ class CfdDashboard extends Component {
           </td>
           <td>
             <TakeCfdPopup takeCfdHandler={this.takeCfdHandler} cfdId={props.data.id} takerAddress={this.state.accounts[0]} disabled={disableTake} />
-            <button onClick={(e) => this.onSettleCfd(props.data.id, e)} className="pure-button" disabled={disableSettle}>Settle</button>
+            <button onClick={(e) => this.onSettleAndWithdrawCfd(props.data.id, e)} className="pure-button" disabled={disableSettle}>Settle</button>
             <button onClick={(e) => this.onRefundCfd(props.data.id, e)} className="pure-button" disabled={disableRefund}>Refund</button>
           </td>
         </tr>

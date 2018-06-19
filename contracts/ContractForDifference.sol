@@ -14,6 +14,7 @@ contract ContractForDifference {
     struct Party {
         address addr;
         Position position;
+        uint128 withdrawBalance; // Amount the Party can withdraw, as a result of settled contract.
     }
     
     struct Cfd {
@@ -71,6 +72,11 @@ contract ContractForDifference {
     address indexed makerAddress,
     uint128 amount);
 
+    event LogWithdrawal (
+    uint128 indexed cfdId,
+    address indexed withdrawalAddress,
+    uint128 amount);
+
     // event Debug (
     //     string description,
     //     uint128 uintValue,
@@ -97,7 +103,7 @@ contract ContractForDifference {
         
         uint128 contractId = numberOfContracts;
 
-        contracts[contractId].maker = Party(makerAddress, makerPosition);
+        contracts[contractId].maker = Party(makerAddress, makerPosition, 0);
         contracts[contractId].assetId = assetId;
         contracts[contractId].amount = uint128(msg.value);
         contracts[contractId].contractEndBlock = contractEndBlock;
@@ -178,6 +184,18 @@ contract ContractForDifference {
         return true;
     }
 
+    function settleAndWithdrawCfd(
+        uint128 cfdId
+        )
+        public {
+        address makerAddr = contracts[cfdId].maker.addr;
+        address takerAddr = contracts[cfdId].taker.addr;
+
+        settleCfd(cfdId);
+        withdraw(cfdId, makerAddr);
+        withdraw(cfdId, takerAddr);
+    }
+
     function settleCfd(
         uint128 cfdId
         )
@@ -200,11 +218,11 @@ contract ContractForDifference {
         // Payout settlements to maker and taker
         uint128 makerSettlement = getSettlementAmount(amount, startPrice, endPrice, cfd.maker.position);
         if (makerSettlement > 0) { 
-            cfd.maker.addr.transfer(makerSettlement);
+            cfd.maker.withdrawBalance = makerSettlement;
         }
         uint128 takerSettlement = getSettlementAmount(amount, startPrice, endPrice, cfd.taker.position);
         if (takerSettlement > 0) {
-            cfd.taker.addr.transfer(takerSettlement);
+            cfd.taker.withdrawBalance = takerSettlement;
         }
 
         // Mark contract as settled.
@@ -222,6 +240,25 @@ contract ContractForDifference {
         );
 
         return true;
+    }
+
+    function withdraw(
+        uint128 cfdId, 
+        address partyAddress
+    )
+    public {
+        Cfd storage cfd = contracts[cfdId];
+        Party storage party = partyAddress == cfd.maker.addr ? cfd.maker : cfd.taker;
+        require(party.withdrawBalance > 0);
+        uint128 amount = party.withdrawBalance;
+        party.withdrawBalance = 0;
+        party.addr.transfer(amount);
+
+        emit LogWithdrawal(
+            cfdId,
+            party.addr,
+            amount
+        );
     }
 
     function getSettlementAmount(

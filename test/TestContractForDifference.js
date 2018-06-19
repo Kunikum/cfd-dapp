@@ -104,13 +104,28 @@ contract('ContractForDifference', async (accounts) => {
       { from: accounts[0] }
     );
 
-    // Then settle and verify correct outcome
+    // Wait until end of contract
     await waitUntilBlock(15, contractEndBlock);
 
-    const settleResult = await cfdInstance.settleCfd(0);
+    // Settle and withdraw maker and takers payouts
+    const settleAndWithdrawResult = await cfdInstance.settleAndWithdrawCfd(0);
 
-    assert.equal(settleResult.logs[0].args.makerSettlement, expectedMakerPayout);
-    assert.equal(settleResult.logs[0].args.takerSettlement, expectedTakerPayout);
+    // Verify correct settlement
+    assert.equal(settleAndWithdrawResult.logs[0].args.cfdId, '0');
+    assert.equal(settleAndWithdrawResult.logs[0].args.makerAddress, makerAddress);
+    assert.equal(settleAndWithdrawResult.logs[0].args.makerSettlement, expectedMakerPayout);
+    assert.equal(settleAndWithdrawResult.logs[0].args.takerAddress, takerAddress);
+    assert.equal(settleAndWithdrawResult.logs[0].args.takerSettlement, expectedTakerPayout);
+
+    // Verify correct maker withdrawal
+    assert.equal(settleAndWithdrawResult.logs[1].args.cfdId, '0');
+    assert.equal(settleAndWithdrawResult.logs[1].args.withdrawalAddress, makerAddress);
+    assert.equal(settleAndWithdrawResult.logs[1].args.amount, expectedMakerPayout);
+
+    // Verify correct taker withdrawal
+    assert.equal(settleAndWithdrawResult.logs[2].args.cfdId, '0');
+    assert.equal(settleAndWithdrawResult.logs[2].args.withdrawalAddress, takerAddress);
+    assert.equal(settleAndWithdrawResult.logs[2].args.amount, expectedTakerPayout);
   });
 
   it("...should accept taking CFD when makerAddress = takerAddress.", async () => {
