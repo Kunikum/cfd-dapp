@@ -1,0 +1,2526 @@
+{
+  "contractName": "AssetPriceOracle",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "owner_",
+          "type": "address"
+        }
+      ],
+      "name": "setOwner",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "authority_",
+          "type": "address"
+        }
+      ],
+      "name": "setAuthority",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint128"
+        },
+        {
+          "name": "",
+          "type": "uint128"
+        }
+      ],
+      "name": "assetPriceRecords",
+      "outputs": [
+        {
+          "name": "price",
+          "type": "uint128"
+        },
+        {
+          "name": "isRecord",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "authority",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "fallback"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "assetId",
+          "type": "uint128"
+        },
+        {
+          "indexed": true,
+          "name": "blockNumber",
+          "type": "uint128"
+        },
+        {
+          "indexed": true,
+          "name": "price",
+          "type": "uint128"
+        }
+      ],
+      "name": "AssetPriceRecorded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "authority",
+          "type": "address"
+        }
+      ],
+      "name": "LogSetAuthority",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "LogSetOwner",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "assetId",
+          "type": "uint128"
+        },
+        {
+          "name": "blockNumber",
+          "type": "uint128"
+        },
+        {
+          "name": "price",
+          "type": "uint128"
+        }
+      ],
+      "name": "recordAssetPrice",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "assetId",
+          "type": "uint128"
+        },
+        {
+          "name": "blockNumber",
+          "type": "uint128"
+        }
+      ],
+      "name": "getAssetPrice",
+      "outputs": [
+        {
+          "name": "price",
+          "type": "uint128"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5033600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055503373ffffffffffffffffffffffffffffffffffffffff167fce241d7ca1f669fee44b6fc00b8eba2df3bb514eed0f6f668f8f89096e81ed9460405160405180910390a2610b01806100a46000396000f300608060405260043610610083576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806313af4035146100925780634b9ce83c146100d55780637a9e5e4b1461014c5780638da5cb5b1461018f578063a956178d146101e6578063bf7e214f14610284578063c289adfa146102db575b34801561008f57600080fd5b50005b34801561009e57600080fd5b506100d3600480360381019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061036e565b005b3480156100e157600080fd5b5061014a60048036038101908080356fffffffffffffffffffffffffffffffff16906020019092919080356fffffffffffffffffffffffffffffffff16906020019092919080356fffffffffffffffffffffffffffffffff169060200190929190505050610450565b005b34801561015857600080fd5b5061018d600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610621565b005b34801561019b57600080fd5b506101a4610701565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b3480156101f257600080fd5b5061023f60048036038101908080356fffffffffffffffffffffffffffffffff16906020019092919080356fffffffffffffffffffffffffffffffff169060200190929190505050610727565b60405180836fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff168152602001821515151581526020019250505060405180910390f35b34801561029057600080fd5b50610299610781565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b3480156102e757600080fd5b5061033460048036038101908080356fffffffffffffffffffffffffffffffff16906020019092919080356fffffffffffffffffffffffffffffffff1690602001909291905050506107a6565b60405180826fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b61039c336000357fffffffff000000000000000000000000000000000000000000000000000000001661085e565b15156103a757600080fd5b80600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167fce241d7ca1f669fee44b6fc00b8eba2df3bb514eed0f6f668f8f89096e81ed9460405160405180910390a250565b61047e336000357fffffffff000000000000000000000000000000000000000000000000000000001661085e565b151561048957600080fd5b8060026000856fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff1681526020019081526020016000206000846fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff16815260200190815260200160002060000160006101000a8154816fffffffffffffffffffffffffffffffff02191690836fffffffffffffffffffffffffffffffff160217905550600160026000856fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff1681526020019081526020016000206000846fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff16815260200190815260200160002060000160106101000a81548160ff021916908315150217905550806fffffffffffffffffffffffffffffffff16826fffffffffffffffffffffffffffffffff16846fffffffffffffffffffffffffffffffff167f37daea2dba76057e5981e6eafd7830a7ceccfe366d1d84de807eaf1e4ca8a30660405160405180910390a4505050565b61064f336000357fffffffff000000000000000000000000000000000000000000000000000000001661085e565b151561065a57600080fd5b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f1abebea81bfa2637f28358c371278fb15ede7ea8dd28d2e03b112ff6d936ada460405160405180910390a250565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6002602052816000526040600020602052806000526040600020600091509150508060000160009054906101000a90046fffffffffffffffffffffffffffffffff16908060000160109054906101000a900460ff16905082565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60008060026000856fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff1681526020019081526020016000206000846fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff16815260200190815260200160002090508060000160109054906101000a900460ff16151561083457600080fd5b8060000160009054906101000a90046fffffffffffffffffffffffffffffffff1691505092915050565b60003073ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16141561089d5760019050610acf565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff1614156108fc5760019050610acf565b600073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16141561095b5760009050610acf565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663b70096138430856040518463ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001827bffffffffffffffffffffffffffffffffffffffffffffffffffffffff19167bffffffffffffffffffffffffffffffffffffffffffffffffffffffff191681526020019350505050602060405180830381600087803b158015610a9157600080fd5b505af1158015610aa5573d6000803e3d6000fd5b505050506040513d6020811015610abb57600080fd5b810190808051906020019092919050505090505b929150505600a165627a7a72305820439a2d00a2e3f61e99130557c8fd3732236760519efe2784f9866de8f1f44e0b0029",
+  "deployedBytecode": "0x608060405260043610610083576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806313af4035146100925780634b9ce83c146100d55780637a9e5e4b1461014c5780638da5cb5b1461018f578063a956178d146101e6578063bf7e214f14610284578063c289adfa146102db575b34801561008f57600080fd5b50005b34801561009e57600080fd5b506100d3600480360381019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061036e565b005b3480156100e157600080fd5b5061014a60048036038101908080356fffffffffffffffffffffffffffffffff16906020019092919080356fffffffffffffffffffffffffffffffff16906020019092919080356fffffffffffffffffffffffffffffffff169060200190929190505050610450565b005b34801561015857600080fd5b5061018d600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610621565b005b34801561019b57600080fd5b506101a4610701565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b3480156101f257600080fd5b5061023f60048036038101908080356fffffffffffffffffffffffffffffffff16906020019092919080356fffffffffffffffffffffffffffffffff169060200190929190505050610727565b60405180836fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff168152602001821515151581526020019250505060405180910390f35b34801561029057600080fd5b50610299610781565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b3480156102e757600080fd5b5061033460048036038101908080356fffffffffffffffffffffffffffffffff16906020019092919080356fffffffffffffffffffffffffffffffff1690602001909291905050506107a6565b60405180826fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b61039c336000357fffffffff000000000000000000000000000000000000000000000000000000001661085e565b15156103a757600080fd5b80600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167fce241d7ca1f669fee44b6fc00b8eba2df3bb514eed0f6f668f8f89096e81ed9460405160405180910390a250565b61047e336000357fffffffff000000000000000000000000000000000000000000000000000000001661085e565b151561048957600080fd5b8060026000856fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff1681526020019081526020016000206000846fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff16815260200190815260200160002060000160006101000a8154816fffffffffffffffffffffffffffffffff02191690836fffffffffffffffffffffffffffffffff160217905550600160026000856fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff1681526020019081526020016000206000846fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff16815260200190815260200160002060000160106101000a81548160ff021916908315150217905550806fffffffffffffffffffffffffffffffff16826fffffffffffffffffffffffffffffffff16846fffffffffffffffffffffffffffffffff167f37daea2dba76057e5981e6eafd7830a7ceccfe366d1d84de807eaf1e4ca8a30660405160405180910390a4505050565b61064f336000357fffffffff000000000000000000000000000000000000000000000000000000001661085e565b151561065a57600080fd5b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f1abebea81bfa2637f28358c371278fb15ede7ea8dd28d2e03b112ff6d936ada460405160405180910390a250565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6002602052816000526040600020602052806000526040600020600091509150508060000160009054906101000a90046fffffffffffffffffffffffffffffffff16908060000160109054906101000a900460ff16905082565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60008060026000856fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff1681526020019081526020016000206000846fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff16815260200190815260200160002090508060000160109054906101000a900460ff16151561083457600080fd5b8060000160009054906101000a90046fffffffffffffffffffffffffffffffff1691505092915050565b60003073ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16141561089d5760019050610acf565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff1614156108fc5760019050610acf565b600073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16141561095b5760009050610acf565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663b70096138430856040518463ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001827bffffffffffffffffffffffffffffffffffffffffffffffffffffffff19167bffffffffffffffffffffffffffffffffffffffffffffffffffffffff191681526020019350505050602060405180830381600087803b158015610a9157600080fd5b505af1158015610aa5573d6000803e3d6000fd5b505050506040513d6020811015610abb57600080fd5b810190808051906020019092919050505090505b929150505600a165627a7a72305820439a2d00a2e3f61e99130557c8fd3732236760519efe2784f9866de8f1f44e0b0029",
+  "sourceMap": "117:1335:0:-;;;718:28;8:9:-1;5:2;;;30:1;27;20:12;5:2;718:28:0;1074:10:4;1066:5;;:18;;;;;;;;;;;;;;;;;;1111:10;1099:23;;;;;;;;;;;;117:1335:0;;;;;;",
+  "deployedSourceMap": "117:1335:0:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;117:1335:0;;1135:130:4;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1135:130:4;;;;;;;;;;;;;;;;;;;;;;;;;;;;756:288:0;;8:9:-1;5:2;;;30:1;27;20:12;5:2;756:288:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1271:158:4;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1271:158:4;;;;;;;;;;;;;;;;;;;;;;;;;;;;1002:26;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1002:26:4;;;;;;;;;;;;;;;;;;;;;;;;;;;492:81:0;;8:9:-1;5:2;;;30:1;27;20:12;5:2;492:81:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;966:30:4;;8:9:-1;5:2;;;30:1;27;20:12;5:2;966:30:4;;;;;;;;;;;;;;;;;;;;;;;;;;;1050:265:0;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1050:265:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1135:130:4;1467:33;1480:10;1492:7;;;;1467:12;:33::i;:::-;1459:42;;;;;;;;1219:6;1211:5;;:14;;;;;;;;;;;;;;;;;;1252:5;;;;;;;;;;;1240:18;;;;;;;;;;;;1135:130;:::o;756:288:0:-;1467:33:4;1480:10;1492:7;;;;1467:12;:33::i;:::-;1459:42;;;;;;;;905:5:0;857:17;:26;875:7;857:26;;;;;;;;;;;;;;;:39;884:11;857:39;;;;;;;;;;;;;;;:45;;;:53;;;;;;;;;;;;;;;;;;971:4;920:17;:26;938:7;920:26;;;;;;;;;;;;;;;:39;947:11;920:39;;;;;;;;;;;;;;;:48;;;:55;;;;;;;;;;;;;;;;;;1031:5;990:47;;1018:11;990:47;;1009:7;990:47;;;;;;;;;;;;756:288;;;:::o;1271:158:4:-;1467:33;1480:10;1492:7;;;;1467:12;:33::i;:::-;1459:42;;;;;;;;1371:10;1359:9;;:22;;;;;;;;;;;;;;;;;;1412:9;;;;;;;;;;;1396:26;;;;;;;;;;;;1271:158;:::o;1002:26::-;;;;;;;;;;;;;:::o;492:81:0:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;966:30:4:-;;;;;;;;;;;;;:::o;1050:265:0:-;1132:13;1157:36;1196:17;:26;1214:7;1196:26;;;;;;;;;;;;;;;:39;1223:11;1196:39;;;;;;;;;;;;;;;1157:78;;1253:11;:20;;;;;;;;;;;;1245:29;;;;;;;;1291:11;:17;;;;;;;;;;;;1284:24;;1050:265;;;;;:::o;1525:361:4:-;1595:4;1630;1615:20;;:3;:20;;;1611:269;;;1658:4;1651:11;;;;1611:269;1690:5;;;;;;;;;;;1683:12;;:3;:12;;;1679:201;;;1718:4;1711:11;;;;1679:201;1768:1;1743:27;;:9;;;;;;;;;;;:27;;;1739:141;;;1793:5;1786:12;;;;1739:141;1836:9;;;;;;;;;;;:17;;;1854:3;1859:4;1865:3;1836:33;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1836:33:4;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;1836:33:4;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;1836:33:4;;;;;;;;;;;;;;;;1829:40;;1525:361;;;;;:::o",
+  "source": "pragma solidity 0.4.24;\n\nimport \"./ds-auth/auth.sol\"; // @see https://dappsys.readthedocs.io/en/latest/ds_auth.html\n\ncontract AssetPriceOracle is DSAuth {\n    // Maximum value expressible with uint128 is 340282366920938463463374607431768211456.\n    // Using 18 decimals for price records (standard Ether precision), \n    // the possible values are between 0 and 340282366920938463463.374607431768211456.\n\n    struct AssetPriceRecord {\n        uint128 price;\n        bool isRecord;\n    }\n\n    mapping(uint128 => mapping(uint128 => AssetPriceRecord)) public assetPriceRecords;\n\n    event AssetPriceRecorded(\n        uint128 indexed assetId,\n        uint128 indexed blockNumber,\n        uint128 indexed price\n    );\n\n    constructor() public {\n    }\n    \n    function recordAssetPrice(uint128 assetId, uint128 blockNumber, uint128 price) public auth {\n        assetPriceRecords[assetId][blockNumber].price = price;\n        assetPriceRecords[assetId][blockNumber].isRecord = true;\n        emit AssetPriceRecorded(assetId, blockNumber, price);\n    }\n\n    function getAssetPrice(uint128 assetId, uint128 blockNumber) public view returns (uint128 price) {\n        AssetPriceRecord storage priceRecord = assetPriceRecords[assetId][blockNumber];\n        require(priceRecord.isRecord);\n        return priceRecord.price;\n    }\n\n    function () public {\n        // dont receive ether via fallback method (by not having 'payable' modifier on this function).\n    }\n}",
+  "sourcePath": "/Users/svantejorgensen/projects/cfd-dapp/contracts/AssetPriceOracle.sol",
+  "ast": {
+    "absolutePath": "/Users/svantejorgensen/projects/cfd-dapp/contracts/AssetPriceOracle.sol",
+    "exportedSymbols": {
+      "AssetPriceOracle": [
+        94
+      ]
+    },
+    "id": 95,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "absolutePath": "/Users/svantejorgensen/projects/cfd-dapp/contracts/ds-auth/auth.sol",
+        "file": "./ds-auth/auth.sol",
+        "id": 2,
+        "nodeType": "ImportDirective",
+        "scope": 95,
+        "sourceUnit": 1237,
+        "src": "25:28:0",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 3,
+              "name": "DSAuth",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1236,
+              "src": "146:6:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_DSAuth_$1236",
+                "typeString": "contract DSAuth"
+              }
+            },
+            "id": 4,
+            "nodeType": "InheritanceSpecifier",
+            "src": "146:6:0"
+          }
+        ],
+        "contractDependencies": [
+          1127,
+          1236
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 94,
+        "linearizedBaseContracts": [
+          94,
+          1236,
+          1127
+        ],
+        "name": "AssetPriceOracle",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "AssetPriceOracle.AssetPriceRecord",
+            "id": 9,
+            "members": [
+              {
+                "constant": false,
+                "id": 6,
+                "name": "price",
+                "nodeType": "VariableDeclaration",
+                "scope": 9,
+                "src": "443:13:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint128",
+                  "typeString": "uint128"
+                },
+                "typeName": {
+                  "id": 5,
+                  "name": "uint128",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "443:7:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 8,
+                "name": "isRecord",
+                "nodeType": "VariableDeclaration",
+                "scope": 9,
+                "src": "466:13:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                },
+                "typeName": {
+                  "id": 7,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "466:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "AssetPriceRecord",
+            "nodeType": "StructDefinition",
+            "scope": 94,
+            "src": "409:77:0",
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 15,
+            "name": "assetPriceRecords",
+            "nodeType": "VariableDeclaration",
+            "scope": 94,
+            "src": "492:81:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint128_$_t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$_$",
+              "typeString": "mapping(uint128 => mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord))"
+            },
+            "typeName": {
+              "id": 14,
+              "keyType": {
+                "id": 10,
+                "name": "uint128",
+                "nodeType": "ElementaryTypeName",
+                "src": "500:7:0",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint128",
+                  "typeString": "uint128"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "492:56:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint128_$_t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$_$",
+                "typeString": "mapping(uint128 => mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord))"
+              },
+              "valueType": {
+                "id": 13,
+                "keyType": {
+                  "id": 11,
+                  "name": "uint128",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "519:7:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  }
+                },
+                "nodeType": "Mapping",
+                "src": "511:36:0",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$",
+                  "typeString": "mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord)"
+                },
+                "valueType": {
+                  "contractScope": null,
+                  "id": 12,
+                  "name": "AssetPriceRecord",
+                  "nodeType": "UserDefinedTypeName",
+                  "referencedDeclaration": 9,
+                  "src": "530:16:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage_ptr",
+                    "typeString": "struct AssetPriceOracle.AssetPriceRecord"
+                  }
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 23,
+            "name": "AssetPriceRecorded",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 22,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 17,
+                  "indexed": true,
+                  "name": "assetId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 23,
+                  "src": "614:23:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 16,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "614:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 19,
+                  "indexed": true,
+                  "name": "blockNumber",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 23,
+                  "src": "647:27:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 18,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "647:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 21,
+                  "indexed": true,
+                  "name": "price",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 23,
+                  "src": "684:21:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 20,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "684:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "604:107:0"
+            },
+            "src": "580:132:0"
+          },
+          {
+            "body": {
+              "id": 26,
+              "nodeType": "Block",
+              "src": "739:7:0",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 27,
+            "implemented": true,
+            "isConstructor": true,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 24,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "729:2:0"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 25,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "739:0:0"
+            },
+            "scope": 94,
+            "src": "718:28:0",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 62,
+              "nodeType": "Block",
+              "src": "847:197:0",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 45,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "baseExpression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 38,
+                            "name": "assetPriceRecords",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 15,
+                            "src": "857:17:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_uint128_$_t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$_$",
+                              "typeString": "mapping(uint128 => mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref))"
+                            }
+                          },
+                          "id": 41,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 39,
+                            "name": "assetId",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 29,
+                            "src": "875:7:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "857:26:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$",
+                            "typeString": "mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref)"
+                          }
+                        },
+                        "id": 42,
+                        "indexExpression": {
+                          "argumentTypes": null,
+                          "id": 40,
+                          "name": "blockNumber",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 31,
+                          "src": "884:11:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "IndexAccess",
+                        "src": "857:39:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage",
+                          "typeString": "struct AssetPriceOracle.AssetPriceRecord storage ref"
+                        }
+                      },
+                      "id": 43,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "price",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 6,
+                      "src": "857:45:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 44,
+                      "name": "price",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 33,
+                      "src": "905:5:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "src": "857:53:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "id": 46,
+                  "nodeType": "ExpressionStatement",
+                  "src": "857:53:0"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 54,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "baseExpression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 47,
+                            "name": "assetPriceRecords",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 15,
+                            "src": "920:17:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_uint128_$_t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$_$",
+                              "typeString": "mapping(uint128 => mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref))"
+                            }
+                          },
+                          "id": 50,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 48,
+                            "name": "assetId",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 29,
+                            "src": "938:7:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "920:26:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$",
+                            "typeString": "mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref)"
+                          }
+                        },
+                        "id": 51,
+                        "indexExpression": {
+                          "argumentTypes": null,
+                          "id": 49,
+                          "name": "blockNumber",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 31,
+                          "src": "947:11:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "IndexAccess",
+                        "src": "920:39:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage",
+                          "typeString": "struct AssetPriceOracle.AssetPriceRecord storage ref"
+                        }
+                      },
+                      "id": 52,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "isRecord",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 8,
+                      "src": "920:48:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "hexValue": "74727565",
+                      "id": 53,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "971:4:0",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "true"
+                    },
+                    "src": "920:55:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 55,
+                  "nodeType": "ExpressionStatement",
+                  "src": "920:55:0"
+                },
+                {
+                  "eventCall": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 57,
+                        "name": "assetId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 29,
+                        "src": "1009:7:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 58,
+                        "name": "blockNumber",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 31,
+                        "src": "1018:11:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 59,
+                        "name": "price",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 33,
+                        "src": "1031:5:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        },
+                        {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        },
+                        {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      ],
+                      "id": 56,
+                      "name": "AssetPriceRecorded",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 23,
+                      "src": "990:18:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_uint128_$_t_uint128_$_t_uint128_$returns$__$",
+                        "typeString": "function (uint128,uint128,uint128)"
+                      }
+                    },
+                    "id": 60,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "990:47:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 61,
+                  "nodeType": "EmitStatement",
+                  "src": "985:52:0"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 63,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 36,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 35,
+                  "name": "auth",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 1192,
+                  "src": "842:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "842:4:0"
+              }
+            ],
+            "name": "recordAssetPrice",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 34,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 29,
+                  "name": "assetId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 63,
+                  "src": "782:15:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 28,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "782:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 31,
+                  "name": "blockNumber",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 63,
+                  "src": "799:19:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 30,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "799:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 33,
+                  "name": "price",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 63,
+                  "src": "820:13:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 32,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "820:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "781:53:0"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 37,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "847:0:0"
+            },
+            "scope": 94,
+            "src": "756:288:0",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 88,
+              "nodeType": "Block",
+              "src": "1147:168:0",
+              "statements": [
+                {
+                  "assignments": [
+                    73
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 73,
+                      "name": "priceRecord",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 89,
+                      "src": "1157:36:0",
+                      "stateVariable": false,
+                      "storageLocation": "storage",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage_ptr",
+                        "typeString": "struct AssetPriceOracle.AssetPriceRecord"
+                      },
+                      "typeName": {
+                        "contractScope": null,
+                        "id": 72,
+                        "name": "AssetPriceRecord",
+                        "nodeType": "UserDefinedTypeName",
+                        "referencedDeclaration": 9,
+                        "src": "1157:16:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage_ptr",
+                          "typeString": "struct AssetPriceOracle.AssetPriceRecord"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 79,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "baseExpression": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 74,
+                        "name": "assetPriceRecords",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 15,
+                        "src": "1196:17:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_uint128_$_t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$_$",
+                          "typeString": "mapping(uint128 => mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref))"
+                        }
+                      },
+                      "id": 76,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 75,
+                        "name": "assetId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 65,
+                        "src": "1214:7:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "nodeType": "IndexAccess",
+                      "src": "1196:26:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$",
+                        "typeString": "mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref)"
+                      }
+                    },
+                    "id": 78,
+                    "indexExpression": {
+                      "argumentTypes": null,
+                      "id": 77,
+                      "name": "blockNumber",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 67,
+                      "src": "1223:11:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "1196:39:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage",
+                      "typeString": "struct AssetPriceOracle.AssetPriceRecord storage ref"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "1157:78:0"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 81,
+                          "name": "priceRecord",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 73,
+                          "src": "1253:11:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage_ptr",
+                            "typeString": "struct AssetPriceOracle.AssetPriceRecord storage pointer"
+                          }
+                        },
+                        "id": 82,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "isRecord",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 8,
+                        "src": "1253:20:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 80,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        1493,
+                        1494
+                      ],
+                      "referencedDeclaration": 1493,
+                      "src": "1245:7:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+                        "typeString": "function (bool) pure"
+                      }
+                    },
+                    "id": 83,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1245:29:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 84,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1245:29:0"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "expression": {
+                      "argumentTypes": null,
+                      "id": 85,
+                      "name": "priceRecord",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 73,
+                      "src": "1291:11:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage_ptr",
+                        "typeString": "struct AssetPriceOracle.AssetPriceRecord storage pointer"
+                      }
+                    },
+                    "id": 86,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberName": "price",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 6,
+                    "src": "1291:17:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "functionReturnParameters": 71,
+                  "id": 87,
+                  "nodeType": "Return",
+                  "src": "1284:24:0"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 89,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getAssetPrice",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 68,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 65,
+                  "name": "assetId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 89,
+                  "src": "1073:15:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 64,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1073:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 67,
+                  "name": "blockNumber",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 89,
+                  "src": "1090:19:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 66,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1090:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1072:38:0"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 71,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 70,
+                  "name": "price",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 89,
+                  "src": "1132:13:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 69,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1132:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1131:15:0"
+            },
+            "scope": 94,
+            "src": "1050:265:0",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 92,
+              "nodeType": "Block",
+              "src": "1340:110:0",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 93,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 90,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1330:2:0"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 91,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1340:0:0"
+            },
+            "scope": 94,
+            "src": "1321:129:0",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 95,
+        "src": "117:1335:0"
+      }
+    ],
+    "src": "0:1452:0"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/svantejorgensen/projects/cfd-dapp/contracts/AssetPriceOracle.sol",
+    "exportedSymbols": {
+      "AssetPriceOracle": [
+        94
+      ]
+    },
+    "id": 95,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "absolutePath": "/Users/svantejorgensen/projects/cfd-dapp/contracts/ds-auth/auth.sol",
+        "file": "./ds-auth/auth.sol",
+        "id": 2,
+        "nodeType": "ImportDirective",
+        "scope": 95,
+        "sourceUnit": 1237,
+        "src": "25:28:0",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 3,
+              "name": "DSAuth",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1236,
+              "src": "146:6:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_DSAuth_$1236",
+                "typeString": "contract DSAuth"
+              }
+            },
+            "id": 4,
+            "nodeType": "InheritanceSpecifier",
+            "src": "146:6:0"
+          }
+        ],
+        "contractDependencies": [
+          1127,
+          1236
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 94,
+        "linearizedBaseContracts": [
+          94,
+          1236,
+          1127
+        ],
+        "name": "AssetPriceOracle",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "AssetPriceOracle.AssetPriceRecord",
+            "id": 9,
+            "members": [
+              {
+                "constant": false,
+                "id": 6,
+                "name": "price",
+                "nodeType": "VariableDeclaration",
+                "scope": 9,
+                "src": "443:13:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint128",
+                  "typeString": "uint128"
+                },
+                "typeName": {
+                  "id": 5,
+                  "name": "uint128",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "443:7:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 8,
+                "name": "isRecord",
+                "nodeType": "VariableDeclaration",
+                "scope": 9,
+                "src": "466:13:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                },
+                "typeName": {
+                  "id": 7,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "466:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "AssetPriceRecord",
+            "nodeType": "StructDefinition",
+            "scope": 94,
+            "src": "409:77:0",
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 15,
+            "name": "assetPriceRecords",
+            "nodeType": "VariableDeclaration",
+            "scope": 94,
+            "src": "492:81:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint128_$_t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$_$",
+              "typeString": "mapping(uint128 => mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord))"
+            },
+            "typeName": {
+              "id": 14,
+              "keyType": {
+                "id": 10,
+                "name": "uint128",
+                "nodeType": "ElementaryTypeName",
+                "src": "500:7:0",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint128",
+                  "typeString": "uint128"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "492:56:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint128_$_t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$_$",
+                "typeString": "mapping(uint128 => mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord))"
+              },
+              "valueType": {
+                "id": 13,
+                "keyType": {
+                  "id": 11,
+                  "name": "uint128",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "519:7:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  }
+                },
+                "nodeType": "Mapping",
+                "src": "511:36:0",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$",
+                  "typeString": "mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord)"
+                },
+                "valueType": {
+                  "contractScope": null,
+                  "id": 12,
+                  "name": "AssetPriceRecord",
+                  "nodeType": "UserDefinedTypeName",
+                  "referencedDeclaration": 9,
+                  "src": "530:16:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage_ptr",
+                    "typeString": "struct AssetPriceOracle.AssetPriceRecord"
+                  }
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 23,
+            "name": "AssetPriceRecorded",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 22,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 17,
+                  "indexed": true,
+                  "name": "assetId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 23,
+                  "src": "614:23:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 16,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "614:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 19,
+                  "indexed": true,
+                  "name": "blockNumber",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 23,
+                  "src": "647:27:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 18,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "647:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 21,
+                  "indexed": true,
+                  "name": "price",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 23,
+                  "src": "684:21:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 20,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "684:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "604:107:0"
+            },
+            "src": "580:132:0"
+          },
+          {
+            "body": {
+              "id": 26,
+              "nodeType": "Block",
+              "src": "739:7:0",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 27,
+            "implemented": true,
+            "isConstructor": true,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 24,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "729:2:0"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 25,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "739:0:0"
+            },
+            "scope": 94,
+            "src": "718:28:0",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 62,
+              "nodeType": "Block",
+              "src": "847:197:0",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 45,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "baseExpression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 38,
+                            "name": "assetPriceRecords",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 15,
+                            "src": "857:17:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_uint128_$_t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$_$",
+                              "typeString": "mapping(uint128 => mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref))"
+                            }
+                          },
+                          "id": 41,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 39,
+                            "name": "assetId",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 29,
+                            "src": "875:7:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "857:26:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$",
+                            "typeString": "mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref)"
+                          }
+                        },
+                        "id": 42,
+                        "indexExpression": {
+                          "argumentTypes": null,
+                          "id": 40,
+                          "name": "blockNumber",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 31,
+                          "src": "884:11:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "IndexAccess",
+                        "src": "857:39:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage",
+                          "typeString": "struct AssetPriceOracle.AssetPriceRecord storage ref"
+                        }
+                      },
+                      "id": 43,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "price",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 6,
+                      "src": "857:45:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 44,
+                      "name": "price",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 33,
+                      "src": "905:5:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "src": "857:53:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "id": 46,
+                  "nodeType": "ExpressionStatement",
+                  "src": "857:53:0"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 54,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "baseExpression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 47,
+                            "name": "assetPriceRecords",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 15,
+                            "src": "920:17:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_uint128_$_t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$_$",
+                              "typeString": "mapping(uint128 => mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref))"
+                            }
+                          },
+                          "id": 50,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 48,
+                            "name": "assetId",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 29,
+                            "src": "938:7:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "920:26:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$",
+                            "typeString": "mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref)"
+                          }
+                        },
+                        "id": 51,
+                        "indexExpression": {
+                          "argumentTypes": null,
+                          "id": 49,
+                          "name": "blockNumber",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 31,
+                          "src": "947:11:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "IndexAccess",
+                        "src": "920:39:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage",
+                          "typeString": "struct AssetPriceOracle.AssetPriceRecord storage ref"
+                        }
+                      },
+                      "id": 52,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "isRecord",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 8,
+                      "src": "920:48:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "hexValue": "74727565",
+                      "id": 53,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "971:4:0",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "true"
+                    },
+                    "src": "920:55:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 55,
+                  "nodeType": "ExpressionStatement",
+                  "src": "920:55:0"
+                },
+                {
+                  "eventCall": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 57,
+                        "name": "assetId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 29,
+                        "src": "1009:7:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 58,
+                        "name": "blockNumber",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 31,
+                        "src": "1018:11:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 59,
+                        "name": "price",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 33,
+                        "src": "1031:5:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        },
+                        {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        },
+                        {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      ],
+                      "id": 56,
+                      "name": "AssetPriceRecorded",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 23,
+                      "src": "990:18:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_uint128_$_t_uint128_$_t_uint128_$returns$__$",
+                        "typeString": "function (uint128,uint128,uint128)"
+                      }
+                    },
+                    "id": 60,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "990:47:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 61,
+                  "nodeType": "EmitStatement",
+                  "src": "985:52:0"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 63,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 36,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 35,
+                  "name": "auth",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 1192,
+                  "src": "842:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "842:4:0"
+              }
+            ],
+            "name": "recordAssetPrice",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 34,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 29,
+                  "name": "assetId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 63,
+                  "src": "782:15:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 28,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "782:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 31,
+                  "name": "blockNumber",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 63,
+                  "src": "799:19:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 30,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "799:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 33,
+                  "name": "price",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 63,
+                  "src": "820:13:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 32,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "820:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "781:53:0"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 37,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "847:0:0"
+            },
+            "scope": 94,
+            "src": "756:288:0",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 88,
+              "nodeType": "Block",
+              "src": "1147:168:0",
+              "statements": [
+                {
+                  "assignments": [
+                    73
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 73,
+                      "name": "priceRecord",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 89,
+                      "src": "1157:36:0",
+                      "stateVariable": false,
+                      "storageLocation": "storage",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage_ptr",
+                        "typeString": "struct AssetPriceOracle.AssetPriceRecord"
+                      },
+                      "typeName": {
+                        "contractScope": null,
+                        "id": 72,
+                        "name": "AssetPriceRecord",
+                        "nodeType": "UserDefinedTypeName",
+                        "referencedDeclaration": 9,
+                        "src": "1157:16:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage_ptr",
+                          "typeString": "struct AssetPriceOracle.AssetPriceRecord"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 79,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "baseExpression": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 74,
+                        "name": "assetPriceRecords",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 15,
+                        "src": "1196:17:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_uint128_$_t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$_$",
+                          "typeString": "mapping(uint128 => mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref))"
+                        }
+                      },
+                      "id": 76,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 75,
+                        "name": "assetId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 65,
+                        "src": "1214:7:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "nodeType": "IndexAccess",
+                      "src": "1196:26:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_uint128_$_t_struct$_AssetPriceRecord_$9_storage_$",
+                        "typeString": "mapping(uint128 => struct AssetPriceOracle.AssetPriceRecord storage ref)"
+                      }
+                    },
+                    "id": 78,
+                    "indexExpression": {
+                      "argumentTypes": null,
+                      "id": 77,
+                      "name": "blockNumber",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 67,
+                      "src": "1223:11:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "1196:39:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage",
+                      "typeString": "struct AssetPriceOracle.AssetPriceRecord storage ref"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "1157:78:0"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 81,
+                          "name": "priceRecord",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 73,
+                          "src": "1253:11:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage_ptr",
+                            "typeString": "struct AssetPriceOracle.AssetPriceRecord storage pointer"
+                          }
+                        },
+                        "id": 82,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "isRecord",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 8,
+                        "src": "1253:20:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 80,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        1493,
+                        1494
+                      ],
+                      "referencedDeclaration": 1493,
+                      "src": "1245:7:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+                        "typeString": "function (bool) pure"
+                      }
+                    },
+                    "id": 83,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1245:29:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 84,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1245:29:0"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "expression": {
+                      "argumentTypes": null,
+                      "id": 85,
+                      "name": "priceRecord",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 73,
+                      "src": "1291:11:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_AssetPriceRecord_$9_storage_ptr",
+                        "typeString": "struct AssetPriceOracle.AssetPriceRecord storage pointer"
+                      }
+                    },
+                    "id": 86,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberName": "price",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 6,
+                    "src": "1291:17:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "functionReturnParameters": 71,
+                  "id": 87,
+                  "nodeType": "Return",
+                  "src": "1284:24:0"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 89,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getAssetPrice",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 68,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 65,
+                  "name": "assetId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 89,
+                  "src": "1073:15:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 64,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1073:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 67,
+                  "name": "blockNumber",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 89,
+                  "src": "1090:19:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 66,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1090:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1072:38:0"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 71,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 70,
+                  "name": "price",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 89,
+                  "src": "1132:13:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 69,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1132:7:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1131:15:0"
+            },
+            "scope": 94,
+            "src": "1050:265:0",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 92,
+              "nodeType": "Block",
+              "src": "1340:110:0",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 93,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 90,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1330:2:0"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 91,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1340:0:0"
+            },
+            "scope": 94,
+            "src": "1321:129:0",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 95,
+        "src": "117:1335:0"
+      }
+    ],
+    "src": "0:1452:0"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.24+commit.e67f0147.Emscripten.clang"
+  },
+  "networks": {
+    "3": {
+      "events": {},
+      "links": {},
+      "address": "0x01bed0ebf9a4ad81bf758485df650ab505c9cfd6",
+      "transactionHash": "0x1433d4f041f700712fa1ac4b397b09fb6d04194923064d82927a9ea18d01e1a0"
+    },
+    "5777": {
+      "events": {},
+      "links": {},
+      "address": "0x5e0dfd74fb071a8ba643cdd3d19837651e5a7701",
+      "transactionHash": "0xde89e4130b171f8ca2c8f07e3e56285233415601794db0b5b65b389991bdee4e"
+    }
+  },
+  "schemaVersion": "2.0.0",
+  "updatedAt": "2018-06-19T14:34:26.622Z"
+}

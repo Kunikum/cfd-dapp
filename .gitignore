@@ -1,6 +1,5 @@
 .DS_Store
 .vscode
-build
 build_webpack
 node_modules
 bin
