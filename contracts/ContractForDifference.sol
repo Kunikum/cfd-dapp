@@ -1,9 +1,10 @@
 pragma solidity 0.4.24;
 
+import "./ds-auth/auth.sol"; // @see https://dappsys.readthedocs.io/en/latest/ds_auth.html
 import "./AssetPriceOracle.sol";
 import "./lib/SafeMath.sol";
 
-contract ContractForDifference {
+contract ContractForDifference is DSAuth {
     using SafeMath for int256;
 
     enum Position { Long, Short }
@@ -13,8 +14,9 @@ contract ContractForDifference {
      */
     struct Party {
         address addr;
-        Position position;
         uint128 withdrawBalance; // Amount the Party can withdraw, as a result of settled contract.
+        Position position;
+        bool isPaid;
     }
     
     struct Cfd {
@@ -72,6 +74,13 @@ contract ContractForDifference {
     address indexed makerAddress,
     uint128 amount);
 
+    event LogCfdForceRefunded (
+    uint128 indexed cfdId,
+    address indexed makerAddress,
+    uint128 makerAmount,
+    address indexed takerAddress,
+    uint128 takerAmount);
+
     event LogWithdrawal (
     uint128 indexed cfdId,
     address indexed withdrawalAddress,
@@ -103,7 +112,8 @@ contract ContractForDifference {
         
         uint128 contractId = numberOfContracts;
 
-        contracts[contractId].maker = Party(makerAddress, makerPosition, 0);
+        contracts[contractId].maker.addr = makerAddress;
+        contracts[contractId].maker.position = makerPosition;
         contracts[contractId].assetId = assetId;
         contracts[contractId].amount = uint128(msg.value);
         contracts[contractId].contractEndBlock = contractEndBlock;
@@ -249,9 +259,13 @@ contract ContractForDifference {
     public {
         Cfd storage cfd = contracts[cfdId];
         Party storage party = partyAddress == cfd.maker.addr ? cfd.maker : cfd.taker;
-        require(party.withdrawBalance > 0);
+        require(party.withdrawBalance > 0); // The party must have a withdraw balance from previous settlement.
+        require(!party.isPaid); // The party must have already been paid out, fx from a refund.
+        
         uint128 amount = party.withdrawBalance;
         party.withdrawBalance = 0;
+        party.isPaid = true;
+        
         party.addr.transfer(amount);
 
         emit LogWithdrawal(
@@ -303,12 +317,14 @@ contract ContractForDifference {
     public
     returns (bool success) {
         Cfd storage cfd = contracts[cfdId];
-        require(!cfd.isSettled);                       // Contract must not be settled already.
-        require(!cfd.isTaken);                         // Contract must not be taken.
-        require(cfd.maker.addr == msg.sender);         // Function caller must be the contract maker or contract Owner
+        require(!cfd.isSettled);                // Contract must not be settled already.
+        require(!cfd.isTaken);                  // Contract must not be taken.
+        require(!cfd.isRefunded);               // Contract must not be refunded already.
+        require(msg.sender == cfd.maker.addr);  // Function caller must be the contract maker.
 
-        cfd.maker.addr.transfer(cfd.amount);
         cfd.isRefunded = true;
+        cfd.maker.isPaid = true;
+        cfd.maker.addr.transfer(cfd.amount);
 
         emit LogCfdRefunded(
             cfdId,
@@ -318,6 +334,38 @@ contract ContractForDifference {
 
         return true;
     }
+
+    function forceRefundCfd(
+        uint128 cfdId
+    )
+    public
+    auth
+    {
+        Cfd storage cfd = contracts[cfdId];
+        require(!cfd.isRefunded); // Contract must not be refunded already.
+
+        cfd.isRefunded = true;
+
+        // Refund Taker
+        uint128 takerAmount = 0;
+        if (cfd.taker.addr != address(0)) {
+            takerAmount = cfd.amount;
+            cfd.taker.withdrawBalance = 0; // Refunding must reset withdraw balance, if any.
+            cfd.taker.addr.transfer(cfd.amount);
+        }
+
+        // Refund Maker
+        cfd.maker.withdrawBalance = 0; // Refunding must reset withdraw balance, if any.
+        cfd.maker.addr.transfer(cfd.amount);
+        
+        emit LogCfdForceRefunded(
+            cfdId,
+            cfd.maker.addr,
+            cfd.amount,
+            cfd.taker.addr,
+            takerAmount
+        );
+    } 
 
     function () public {
         // dont receive ether via fallback method (by not having 'payable' modifier on this function).
