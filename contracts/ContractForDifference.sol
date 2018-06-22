@@ -225,15 +225,17 @@ contract ContractForDifference is DSAuth {
         uint128 startPrice = priceOracle.getAssetPrice(cfd.assetId, cfd.contractStartBlock);
         uint128 endPrice = priceOracle.getAssetPrice(cfd.assetId, cfd.contractEndBlock);
 
-        // Payout settlements to maker and taker
-        uint128 makerSettlement = getSettlementAmount(amount, startPrice, endPrice, cfd.maker.position);
-        if (makerSettlement > 0) { 
-            cfd.maker.withdrawBalance = makerSettlement;
-        }
+        /**
+         * Register settlements for maker and taker.
+         * Maker recieves any leftover wei from integer division.
+         */
         uint128 takerSettlement = getSettlementAmount(amount, startPrice, endPrice, cfd.taker.position);
         if (takerSettlement > 0) {
             cfd.taker.withdrawBalance = takerSettlement;
         }
+
+        uint128 makerSettlement = (amount * 2) - takerSettlement;
+        cfd.maker.withdrawBalance = makerSettlement;
 
         // Mark contract as settled.
         cfd.isSettled = true;
