@@ -305,11 +305,11 @@ contract ContractForDifference is DSAuth {
         int256 priceDiff = position == Position.Long ? exitPrice.sub(entryPrice) : entryPrice.sub(exitPrice);
         int256 settlement = amount.add(priceDiff.mul(amount).mul(leverage).div(entryPrice));
         if (settlement < 0) {
-            return 0; // Calculated settlement was negative. But a party can't be lose more than his deposit, so he just gets 0 back.
+            return 0; // Calculated settlement was negative. But a party can't lose more than his deposit, so he's just awarded 0.
         } else if (settlement > amount * 2) {
             return amountUInt * 2; // Calculated settlement was more than the total deposits, so settle for the total deposits.
         } else {
-            return uint128(settlement); // Settlement was more than zero and less than sum of deposit amounts, so we can pay it out as is.
+            return uint128(settlement); // Settlement was more than zero and less than sum of deposit amounts, so we can settle it as is.
         }
     }
 
