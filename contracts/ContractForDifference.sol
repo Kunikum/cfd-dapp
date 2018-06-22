@@ -112,11 +112,32 @@ contract ContractForDifference is DSAuth {
         
         uint128 contractId = numberOfContracts;
 
-        contracts[contractId].maker.addr = makerAddress;
-        contracts[contractId].maker.position = makerPosition;
-        contracts[contractId].assetId = assetId;
-        contracts[contractId].amount = uint128(msg.value);
-        contracts[contractId].contractEndBlock = contractEndBlock;
+        /**
+         * Initialize CFD struct using tight variable packing pattern.
+         * See https://fravoll.github.io/solidity-patterns/tight_variable_packing.html
+         */
+        Party memory maker = Party(makerAddress, 0, makerPosition, false);
+        Party memory taker = Party(address(0), 0, Position.Long, false);
+        Cfd memory newCfd = Cfd(
+            maker,
+            taker,
+            assetId,
+            uint128(msg.value),
+            0,
+            contractEndBlock,
+            false,
+            false,
+            false
+        );
+
+        contracts[contractId] = newCfd;
+
+        // contracts[contractId].maker.addr = makerAddress;
+        // contracts[contractId].maker.position = makerPosition;
+        // contracts[contractId].assetId = assetId;
+        // contracts[contractId].amount = uint128(msg.value);
+        // contracts[contractId].contractEndBlock = contractEndBlock;
+
         numberOfContracts++;
         
         emit LogMakeCfd(
