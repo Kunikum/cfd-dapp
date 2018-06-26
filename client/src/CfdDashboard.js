@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import web3 from './utils/web3'
-import { BigNumber } from 'bignumber.js';
 import { getCfdInstance, getApoInstance } from './utils/ContractLoader'
 import { getSettlements, assetIdToString } from './utils/CfdUtils'
 import CfdStatusPopup from './components/CfdStatusPopup'
@@ -54,7 +53,7 @@ class CfdDashboard extends Component {
         const transactionBlockNumber = assetPrice.blockNumber;
         const assetId = assetPrice.args.assetId;
         const blockNumber = assetPrice.args.blockNumber;
-        const price = new BigNumber(assetPrice.args.price).dividedBy('1e18');
+        const price = web3.utils.fromWei(assetPrice.args.price.toString(), 'ether');
         priceRecordObjects.push({ transactionBlockNumber,assetId, blockNumber, price });
       });
       this.setState({

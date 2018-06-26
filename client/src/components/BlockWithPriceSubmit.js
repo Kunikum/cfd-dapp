@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { assetIdToString } from '../utils/CfdUtils'
-import { BigNumber } from 'bignumber.js';
 import { withStyles } from '@material-ui/core/styles'
 import Popover from '@material-ui/core/Popover'
 import Button from '@material-ui/core/Button';
@@ -34,7 +33,8 @@ class BlockWithPriceSubmit extends Component {
     }
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+
     // Set inputPrice and blockPrice to the newest price of the assetId+blockNo-combination prices.
     if (this.state.priceRecords) {
       const priceRecords = this.state.priceRecords.filter((record) => { 
@@ -72,7 +72,7 @@ class BlockWithPriceSubmit extends Component {
     await this.state.apoInstance.recordAssetPrice(
       this.state.assetId,
       this.state.blockNo,
-      new BigNumber(this.state.inputPrice).multipliedBy('1e18').toFixed(0),
+      web3.utils.toWei(this.state.inputPrice, 'ether'),
       { from: this.state.currentAccount }
     );
 

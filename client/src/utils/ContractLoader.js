@@ -1,5 +1,5 @@
-import ContractForDifference from '../../build/contracts/ContractForDifference.json';
-import AssetPriceOracle from '../../build/contracts/AssetPriceOracle.json';
+import ContractForDifference from '../contracts/ContractForDifference.json';
+import AssetPriceOracle from '../contracts/AssetPriceOracle.json';
 import contract from 'truffle-contract';
 import web3 from './web3';
 
