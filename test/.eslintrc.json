@@ -1,0 +1,36 @@
+{
+  "plugins": [
+    "mocha"
+  ],
+  "env": {
+    "mocha": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 8,
+    "sourceType": "module"
+  },
+  "globals": {
+    "artifacts": true,
+    "require": true,
+    "web3": true,
+    "contract": true,
+    "assert": true
+  },
+  "extends": ["eslint:recommended"],
+  "rules": {
+    "mocha/handle-done-callback": 2,
+    "mocha/max-top-level-suites": [1, {"limit": 1}],
+    "mocha/no-exclusive-tests": 2,
+    "mocha/no-global-tests": 2,
+    "mocha/no-hooks-for-single-case": 2,
+    "mocha/no-identical-title": 2,
+    "mocha/no-nested-tests": 2,
+    "mocha/no-pending-tests": 1,
+    "mocha/no-return-and-callback": 1,
+    "mocha/no-sibling-hooks": 2,
+    "mocha/no-skipped-tests": 2,
+    "mocha/no-synchronous-tests": 2,
+    "mocha/no-top-level-hooks": 2
+  }
+}
