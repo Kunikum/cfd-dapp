@@ -18,43 +18,24 @@
  * });
 **/
 
-module.exports = (web3) => {
-  function sendRpc(method, params) {
-    return new Promise((resolve) => {
-      web3.currentProvider.sendAsync({
-        jsonrpc: '2.0',
-        method,
-        params: params || [],
-        id: new Date().getTime(),
-      }, (err, res) => { resolve(res); });
+function sendRpc(method, params, web3) {
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.sendAsync({
+      jsonrpc: '2.0',
+      method,
+      params,
+      id: new Date().getTime(),
+    }, (err, res) => {
+      return err ? reject(err) : resolve(res);
     });
-  }
-  
-  function waitUntilBlock(seconds, targetBlock) {
-    return new Promise((resolve) => {
-      const asyncIterator = () => {
-        return web3.eth.getBlock('latest', (e, { number }) => {
-          if (number >= targetBlock - 1) {
-            return sendRpc('evm_increaseTime', [seconds])
-            .then(() => sendRpc('evm_mine')).then(resolve);
-          }
-          return sendRpc('evm_mine').then(asyncIterator);
-        });
-      };
-      asyncIterator();
-    });
-  }
-  
-  function wait(seconds = 20, blocks = 1) {
-    return new Promise((resolve) => {
-      return web3.eth.getBlock('latest', (e, { number }) => {
-        resolve(blocks + number);
-      });
-    })
-    .then((targetBlock) => {
-      return waitUntilBlock(seconds, targetBlock);
-    });
-  }
+  })
+}
 
-  return { wait, waitUntilBlock };
-};
+export async function waitUntilBlock(targetBlock, web3) {
+  let currentBlock = await web3.eth.getBlockNumber();
+  while (currentBlock < targetBlock) {
+    await sendRpc('evm_increaseTime', [15], web3);
+    await sendRpc('evm_mine', [], web3);
+    currentBlock = await web3.eth.getBlockNumber();
+  }
+}

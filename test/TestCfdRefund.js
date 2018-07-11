@@ -1,5 +1,5 @@
 const ContractForDifference = artifacts.require("./ContractForDifference.sol");
-const { wait, waitUntilBlock } = require("./utils/BlockUtils.js")(web3);
+import { waitUntilBlock } from './utils/BlockUtils.js';
 
 const Web3 = require('web3'); // web3 1.0
 
@@ -52,7 +52,7 @@ contract('ContractForDifference Refund', async (accounts) => {
     assert.equal(beforeRefundBalance.toString(), startBalance.sub(paymentAmount).sub(makeCfdGasCost).toString());
 
     // Wait for contract to end.
-    await waitUntilBlock(15, contractEndBlock);
+    await waitUntilBlock(contractEndBlock, web3Latest);
 
     // Refund contract
     const refundCfdResult = await cfdInstance.refundCfd(

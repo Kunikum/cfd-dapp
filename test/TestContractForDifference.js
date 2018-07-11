@@ -1,6 +1,6 @@
 const ContractForDifference = artifacts.require("./ContractForDifference.sol");
 const AssetPriceOracle = artifacts.require("./AssetPriceOracle.sol");
-const { wait, waitUntilBlock } = require("./utils/BlockUtils.js")(web3);
+import { waitUntilBlock } from './utils/BlockUtils.js';
 import assertRevert from "openzeppelin-solidity/test/helpers/assertRevert.js"; // Requires ES6 module support, see truffle.js
 
 const Web3 = require('web3');
@@ -105,7 +105,7 @@ contract('ContractForDifference', async (accounts) => {
     );
 
     // Wait until end of contract
-    await waitUntilBlock(15, contractEndBlock);
+    await waitUntilBlock(contractEndBlock, web3Latest);
 
     // Settle and withdraw maker and takers payouts
     const settleAndWithdrawResult = await cfdInstance.settleAndWithdrawCfd(0);
