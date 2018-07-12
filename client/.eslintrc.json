@@ -2,11 +2,16 @@
   "env": {
     "node": true,
     "browser": true,
+    "jest": true,
     "es6": true
   },
   "parser": "babel-eslint",
   "extends": "airbnb",
   "rules": {
-    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }]
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+    "prefer-destructuring": 0,
+    "react/destructuring-assignment": [1, "never"],
+    "no-console": 0,
+    "max-len": [1, {"code": 150, "tabWidth": 2, "comments": 300, "ignoreTrailingComments": true}]
   }
 }

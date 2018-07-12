@@ -1,9 +1,9 @@
+import contract from 'truffle-contract';
 import ContractForDifference from '../contracts/ContractForDifference.json';
 import AssetPriceOracle from '../contracts/AssetPriceOracle.json';
-import contract from 'truffle-contract';
 import web3 from './web3';
 
-// Loads the truffle-contract instance of the ContractForDifference 
+// Loads the truffle-contract instance of the ContractForDifference
 export async function getCfdInstance() {
   const cfd = contract(ContractForDifference);
   cfd.setProvider(web3.currentProvider);

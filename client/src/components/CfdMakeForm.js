@@ -1,12 +1,13 @@
-import React, { Component } from 'react'
-import { getCfdInstance } from '../utils/ContractLoader'
-import web3 from '../utils/web3'
-import { assets } from '../utils/CfdUtils'
-import { withStyles } from '@material-ui/core/styles'
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import { TextValidator, ValidatorForm } from 'react-material-ui-form-validator';
 import Button from '@material-ui/core/Button';
+import { assets } from '../utils/CfdUtils';
+import web3 from '../utils/web3';
+import { getCfdInstance } from '../utils/ContractLoader';
 
 const styles = theme => ({
   container: {
@@ -24,33 +25,31 @@ const styles = theme => ({
   textValidator: {
     marginLeft: theme.spacing.unit,
     marginRight: theme.spacing.unit,
-    minWidth: '400px'
+    minWidth: '400px',
   },
   button: {
     marginTop: theme.spacing.unit,
     marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit
-  }
+    marginRight: theme.spacing.unit,
+  },
 });
 
 class CfdMakeForm extends Component {
   constructor(props) {
-    super(props)
+    super(props);
 
     this.state = {
       makeMakerAddress: '',
       makeAsset: '',
       makePosition: '',
       makeAmountEther: '',
-      makeEndBlock: ''
-    }
+      makeEndBlock: '',
+    };
   }
 
   componentWillMount() {
     // custom rule will have name 'isEthereumAddress'
-    ValidatorForm.addValidationRule('isEthereumAddress', (address) => {
-      return web3.utils.isAddress(address);
-    });
+    ValidatorForm.addValidationRule('isEthereumAddress', address => web3.utils.isAddress(address));
   }
 
   async componentDidMount() {
@@ -59,20 +58,12 @@ class CfdMakeForm extends Component {
     const accounts = await web3.eth.getAccounts();
 
     this.setState({
-      web3: web3,
-      currentBlockNumber: currentBlockNumber,
-      cfdInstance: cfdInstance,
-      accounts: accounts,
+      cfdInstance,
+      accounts,
       makeMakerAddress: accounts[0],
-      makeEndBlock: (currentBlockNumber + 40).toString() // Suggest Make end block to be current block plus 10 minutes of blocks (4 blocks per minute * 10 minutes)
+      makeEndBlock: (currentBlockNumber + 40).toString(), // Suggest Make end block to be current block plus 10 minutes of blocks (4 blocks per minute * 10 minutes)
     });
   }
-
-  handleChange = name => event => {
-    this.setState({
-      [name]: event.target.value,
-    });
-  };
 
   onMakeCfd = async (event) => {
     event.preventDefault();
@@ -84,7 +75,7 @@ class CfdMakeForm extends Component {
       this.state.makeAsset,
       this.state.makePosition,
       this.state.makeEndBlock,
-      { value: web3.utils.toWei(this.state.makeAmountEther, 'ether'), from: this.state.accounts[0] }
+      { value: web3.utils.toWei(this.state.makeAmountEther, 'ether'), from: this.state.accounts[0] },
     ));
 
     await this.state.cfdInstance.makeCfd(
@@ -92,7 +83,7 @@ class CfdMakeForm extends Component {
       this.state.makeAsset,
       this.state.makePosition,
       this.state.makeEndBlock,
-      { value: web3.utils.toWei(this.state.makeAmountEther, 'ether'), from: this.state.accounts[0] }
+      { value: web3.utils.toWei(this.state.makeAmountEther, 'ether'), from: this.state.accounts[0] },
     );
 
     this.setState({
@@ -100,15 +91,21 @@ class CfdMakeForm extends Component {
       makeAsset: '',
       makePosition: 0,
       makeAmountEther: '',
-      makeEndBlock: ''
+      makeEndBlock: '',
+    });
+  };
+
+  handleChange = name => (event) => {
+    this.setState({
+      [name]: event.target.value,
     });
   };
 
   render() {
-    const { classes } = this.props;
+    const classes = this.props.classes;
 
     return (
-      <ValidatorForm onSubmit={(e) => this.onMakeCfd(e)}>
+      <ValidatorForm onSubmit={e => this.onMakeCfd(e)}>
         <TextValidator
           styles={styles.textValidator}
           label="Maker Ethereum Address"
@@ -158,7 +155,7 @@ class CfdMakeForm extends Component {
           helperText="Please select maker position"
           margin="normal"
         >
-          {[{ value: "0", label: 'Long' }, { value: "1", label: 'Short' }].map(asset => (
+          {[{ value: '0', label: 'Long' }, { value: '1', label: 'Short' }].map(asset => (
             <MenuItem key={asset.value} value={asset.value}>
               {asset.label}
             </MenuItem>
@@ -184,10 +181,20 @@ class CfdMakeForm extends Component {
           helperText="Please select maker end block"
           margin="normal"
         />
-        <Button type="submit" variant="contained" className={classes.button}>Make</Button>
+        <Button type="submit" variant="contained" className={classes.button}>
+          Make
+        </Button>
       </ValidatorForm>
     );
   }
 }
+
+CfdMakeForm.propTypes = {
+  classes: PropTypes.object,
+};
+
+CfdMakeForm.defaultProps = {
+  classes: {},
+};
 
 export default withStyles(styles)(CfdMakeForm);
