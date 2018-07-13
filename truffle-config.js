@@ -1,11 +1,18 @@
+/**
+ * This file (truffl-config.js) is just a copy of truffle.js for compatibility with Windows.
+ */
+
 require('babel-register')({
   ignore: /node_modules\/(?!openzeppelin-solidity\/test\/helpers)/
 })
 require('babel-polyfill')
 
+var config = require('./truffle.json');
+
 var HDWalletProvider = require("truffle-hdwallet-provider");
 var infura_apikey = "UKR0P7qucHTZ96FjnDB1";
-var mnemonic = "apple warrior license hard know pilot abandon stadium fly rookie veteran citizen";
+var testMnemonic = "apple warrior license hard know pilot abandon stadium fly rookie veteran citizen";
+
 
 // See <http://truffleframework.com/docs/advanced/configuration>
 // to customize your Truffle configuration!
@@ -20,11 +27,19 @@ module.exports = {
     },
     ropsten: {
       provider: function() { 
-        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/"+infura_apikey) 
+        return new HDWalletProvider(testMnemonic, "https://ropsten.infura.io/"+infura_apikey) 
       },
       network_id: 3,
       gas: 4500000, // Current Ropsten gas limit. See https://ropsten.etherscan.io/block/3141628
       gasPrice: 11100000000 // 11.1 GWei - based on the middle price of current txs getting into blocks currently on Ropsten.
+    },
+    main: {
+      provider: function() { 
+        return new HDWalletProvider(config.mnemonic, "https://infura.io/"+infura_apikey) 
+      },
+      network_id: 1,
+      gas: 8000000, // Current mainnet gas limit. See https://etherscan.io/block/5955866
+      gasPrice: 12100000000 // 12.1 GWei - based on SafeLow from https://ethgasstation.info/
     }
   },
   solc: {
