@@ -19,6 +19,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "deploy-web": "scp -r build/* kunik@cfd.kunikum.com:/var/www/cfd.kunikum.com/html/",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "link-contracts": "cd src && ln -s ../../build/contracts contracts",
