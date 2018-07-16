@@ -175,6 +175,7 @@ class CfdMakeForm extends Component {
           id="input-makeEndBlock"
           required
           label="End Block"
+          type="number"
           className={classes.textField}
           value={this.state.makeEndBlock}
           onChange={this.handleChange('makeEndBlock')}

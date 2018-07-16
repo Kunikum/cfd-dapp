@@ -120,6 +120,7 @@ class BlockWithPriceSubmit extends Component {
               className={classes.textField}
               label="Price"
               name="price"
+              type="number"
               value={this.state.inputPrice}
               onChange={event => this.setState({ inputPrice: event.target.value })}
               helperText="Please input price"
