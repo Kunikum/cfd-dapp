@@ -3,7 +3,7 @@ var ContractForDifference = artifacts.require("./ContractForDifference.sol");
 
 module.exports = function (deployer, network) {
   deployer.then(async () => { // deployer is currently not directly async/await compatible. See https://github.com/trufflesuite/truffle/issues/501
-    if (network == "main") {
+    if (network == "mainnet") {
       //await deployer.deploy(AssetPriceOracle, { overwrite: false });
       await deployer.deploy(ContractForDifference, "0x4b7a34f1ef5c78226e9ca017595426188daac7ce");
     }
