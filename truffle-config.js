@@ -39,7 +39,7 @@ module.exports = {
       },
       network_id: 1,
       gas: 8000000, // Current mainnet gas limit. See https://etherscan.io/block/5955866
-      gasPrice: 12100000000 // 12.1 GWei - based on SafeLow from https://ethgasstation.info/
+      gasPrice: 16100000000 // in wei - based on SafeLow from https://ethgasstation.info/
     }
   },
   solc: {

@@ -29,13 +29,13 @@ module.exports = {
       gas: 4500000, // Current Ropsten gas limit. See https://ropsten.etherscan.io/block/3141628
       gasPrice: 11100000000 // 11.1 GWei - based on the middle price of current txs getting into blocks currently on Ropsten.
     },
-    main: {
+    mainnet: {
       provider: function() { 
-        return new HDWalletProvider(config.mnemonic, "https://infura.io/"+infura_apikey) 
+        return new HDWalletProvider(config.mnemonic, "https://mainnet.infura.io/"+infura_apikey) 
       },
       network_id: 1,
-      gas: 8000000, // Current mainnet gas limit. See https://etherscan.io/block/5955866
-      gasPrice: 12100000000 // 12.1 GWei - based on SafeLow from https://ethgasstation.info/
+      gas: 2500000, // A little over the actual gas usage of deploying ContractForDifference (1906619), see https://ropsten.etherscan.io/tx/0x85cdb04edfa50bede0b175df67a606b388f433b3ee22dd3fa8745f2baf248938
+      gasPrice: 6100000000 // in wei - based on SafeLow from https://ethgasstation.info/
     }
   },
   solc: {
