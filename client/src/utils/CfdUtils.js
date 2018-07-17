@@ -32,6 +32,7 @@ export const assets = [
   { value: '2', label: 'AMZN' },
   { value: '3', label: 'AAPL' },
   { value: '4', label: 'GOOGL' },
+  { value: '5', label: 'S&P 500' },
 ];
 
 export function assetIdToString(assetId) {
