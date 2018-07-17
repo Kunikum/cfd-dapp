@@ -51,7 +51,7 @@ class CfdDashboard extends Component {
         const transactionBlockNumber = assetPrice.blockNumber;
         const assetId = assetPrice.args.assetId;
         const blockNumber = assetPrice.args.blockNumber;
-        const price = web3.utils.fromWei(assetPrice.args.price.toString(), 'ether');
+        const price = assetPrice.args.price.div(1000000000000000000).toString(10);
         priceRecordObjects.push({
           transactionBlockNumber, assetId, blockNumber, price,
         });
