@@ -36,9 +36,6 @@ export const assets = [
 ];
 
 export function assetIdToString(assetId) {
-  if (typeof assetId !== String) {
-    assetId = assetId.toString();
-  }
-  const asset = assets.find(asset => asset.value === assetId);
-  return asset ? asset.label : assetId;
+  const assetMatch = assets.find(asset => asset.value === assetId.toString());
+  return assetMatch ? assetMatch.label : assetId;
 }
