@@ -2,12 +2,12 @@ const ContractForDifference = artifacts.require("./ContractForDifference.sol");
 const AssetPriceOracle = artifacts.require("./AssetPriceOracle.sol");
 import { waitUntilBlock } from './utils/BlockUtils.js';
 import assertRevert from "openzeppelin-solidity/test/helpers/assertRevert.js"; // Requires ES6 module support, see truffle.js
+import CfdTest from './utils/CfdTest.js';
 
 const Web3 = require('web3');
 
 contract('ContractForDifference', async (accounts) => {
   const web3Latest = new Web3(web3.currentProvider);
-  const startBlock = 10 //await web3Latest.eth.getBlockNumber();
   let cfdInstance;
   let oracleInstance;
 
@@ -176,5 +176,52 @@ contract('ContractForDifference', async (accounts) => {
         { from: makerAddress, value: paymentAmount }
       )
     );
+  });
+
+  it("...should settle whole deposit to short position, when asset price goes to zero.", async () => {
+    let cfdTest = new CfdTest();
+    await cfdTest.instantiate();
+
+    const settledCfd = await cfdTest.getSettledCFD({makerPosition: 0, depositAmount: '1', assetEndPrice: '0'});
+
+    assert.equal(settledCfd.logs[0].args.makerSettlement.toString(10), '0');
+    assert.equal(settledCfd.logs[0].args.takerSettlement.toString(10), '2000000000000000000');
+  });
+
+  it("...should award any remainder of settlement calculation to taker, when taker wins as short.", async () => {
+    let cfdTest = new CfdTest();
+    await cfdTest.instantiate();
+
+    const settledCfd = await cfdTest.getSettledCFD({makerPosition: 0, depositAmount: '0.111111111111111111', assetStartPrice: '10', assetEndPrice: '3'});
+    assert.equal(settledCfd.logs[0].args.makerSettlement.toString(10), '33333333333333334');
+    assert.equal(settledCfd.logs[0].args.takerSettlement.toString(10), '188888888888888888');
+  });
+
+  it("...should award any remainder of settlement calculation to taker, when taker looses as short.", async () => {
+    let cfdTest = new CfdTest();
+    await cfdTest.instantiate();
+
+    // When taker looses as short
+    const settledCfd2 = await cfdTest.getSettledCFD({makerPosition: 0, depositAmount: '0.111111111111111111', assetStartPrice: '10', assetEndPrice: '13'});
+    assert.equal(settledCfd2.logs[0].args.makerSettlement.toString(10), '144444444444444444');
+    assert.equal(settledCfd2.logs[0].args.takerSettlement.toString(10), '77777777777777778');
+  });
+
+  it("...should award any remainder of settlement calculation to taker, when taker wins as long.", async () => {
+    let cfdTest = new CfdTest();
+    await cfdTest.instantiate();
+
+    const settledCfd3 = await cfdTest.getSettledCFD({makerPosition: 1, depositAmount: '0.111111111111111111', assetStartPrice: '10', assetEndPrice: '13'});
+    assert.equal(settledCfd3.logs[0].args.makerSettlement.toString(10), '77777777777777778');
+    assert.equal(settledCfd3.logs[0].args.takerSettlement.toString(10), '144444444444444444');
+  });
+
+  it("...should award any remainder of settlement calculation to taker, when taker looses as long.", async () => {
+    let cfdTest = new CfdTest();
+    await cfdTest.instantiate();
+
+    const settledCfd4 = await cfdTest.getSettledCFD({makerPosition: 1, depositAmount: '0.111111111111111111', assetStartPrice: '10', assetEndPrice: '3'});
+    assert.equal(settledCfd4.logs[0].args.makerSettlement.toString(10), '188888888888888888');
+    assert.equal(settledCfd4.logs[0].args.takerSettlement.toString(10), '33333333333333334');
   });
 });

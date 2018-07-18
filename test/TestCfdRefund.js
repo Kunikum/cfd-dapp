@@ -11,24 +11,14 @@ contract('ContractForDifference Refund', async (accounts) => {
    * @see https://github.com/indutny/bn.js/ 
    */
   const toBN = web3Latest.utils.toBN;
-
-  const startBlock = 10 //await web3Latest.eth.getBlockNumber();
+  
   let cfdInstance;
-  let oracleInstance;
 
   const makerAddress = accounts[0];
   const assetId = 1;
   const makerPosition = 1; // long = 0, short = 1
   const paymentAmount = toBN(1000000000000000000); // 1 Ether in Wei
-  let contractStartBlock;
   let contractEndBlock; // For some reason I can't use await here without the test runner dropping the whole suite, so I'll set this value in the first test function.
-
-  const cfdId = 0;
-  const takerAddress = accounts[1];
-  const takerPosition = 0;
-
-  const startPrice = 100;
-  const endPrice = 120;
 
   it("...should allow refund when: taker = none and msg.sender = maker", async () => {
     cfdInstance = await ContractForDifference.deployed();
