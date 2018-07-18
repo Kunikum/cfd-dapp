@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { BigNumber } from 'bignumber.js';
 import web3 from './utils/web3';
 import { getApoInstance } from './utils/ContractLoader';
@@ -162,7 +163,7 @@ class PriceOracleDashboard extends Component {
                   onChange={event => this.setState({ registerPrice: event.target.value })}
                 />
               </p>
-              <button className="pure-button pure-button-primary">
+              <button type="submit" className="pure-button pure-button-primary">
                 Register Price
               </button>
             </form>
@@ -195,5 +196,13 @@ const PriceRecordRow = props => (
     </td>
   </tr>
 );
+
+PriceRecordRow.propTypes = {
+  data: PropTypes.shape({
+    assetId: PropTypes.number,
+    blockNumber: PropTypes.number,
+    price: PropTypes.number,
+  }).isRequired,
+};
 
 export default PriceOracleDashboard;

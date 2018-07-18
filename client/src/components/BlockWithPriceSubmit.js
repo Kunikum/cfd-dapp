@@ -139,14 +139,21 @@ BlockWithPriceSubmit.propTypes = {
   apoInstance: PropTypes.shape({
     recordAssetPrice: PropTypes.func,
   }).isRequired,
+  priceRecords: PropTypes.arrayOf(PropTypes.shape({
+    assetId: PropTypes.object,
+    blockNumber: PropTypes.object,
+    price: PropTypes.string,
+    transactionBlockNumber: PropTypes.number,
+  })),
   currentAccount: PropTypes.string.isRequired,
   assetId: PropTypes.number.isRequired,
   blockNo: PropTypes.number.isRequired,
-  classes: PropTypes.object,
+  classes: PropTypes.object, /* eslint-disable-line react/forbid-prop-types */
 };
 
 BlockWithPriceSubmit.defaultProps = {
   classes: {},
+  priceRecords: [],
 };
 
 export default withStyles(styles)(BlockWithPriceSubmit);

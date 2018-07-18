@@ -191,7 +191,7 @@ class CfdMakeForm extends Component {
 }
 
 CfdMakeForm.propTypes = {
-  classes: PropTypes.object,
+  classes: PropTypes.object, /* eslint-disable-line react/forbid-prop-types */
 };
 
 CfdMakeForm.defaultProps = {

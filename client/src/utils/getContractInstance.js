@@ -1,3 +1,4 @@
+/* eslint-disable */ // Enable eslint again when this is put to use.
 import getContract from 'truffle-contract';
 
 const getContractInstance = async (web3, contractDefinition) => {

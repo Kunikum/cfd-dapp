@@ -99,7 +99,7 @@ class TakeCfdPopup extends Component {
 TakeCfdPopup.propTypes = {
   cfdId: PropTypes.number.isRequired,
   takerAddress: PropTypes.string.isRequired,
-  classes: PropTypes.object,
+  classes: PropTypes.object, /* eslint-disable-line react/forbid-prop-types */
   disabled: PropTypes.bool,
   takeCfdHandler: PropTypes.func.isRequired,
 };

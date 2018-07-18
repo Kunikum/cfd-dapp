@@ -67,7 +67,7 @@ CfdStatusPopup.propTypes = {
     id: PropTypes.number,
     status: PropTypes.string,
   }).isRequired,
-  classes: PropTypes.object,
+  classes: PropTypes.object, /* eslint-disable-line react/forbid-prop-types */
 };
 
 CfdStatusPopup.defaultProps = {
