@@ -219,12 +219,17 @@ contract ContractForDifference is DSAuth {
         uint128 cfdId
         )
         public {
-        address makerAddr = contracts[cfdId].maker.addr;
-        address takerAddr = contracts[cfdId].taker.addr;
+        Party storage maker = contracts[cfdId].maker;
+        Party storage taker = contracts[cfdId].taker;
 
         settleCfd(cfdId);
-        withdraw(cfdId, makerAddr);
-        withdraw(cfdId, takerAddr);
+
+        if (maker.withdrawBalance > 0) {
+            withdraw(cfdId, maker.addr);
+        }
+        if (taker.withdrawBalance > 0) {
+            withdraw(cfdId, taker.addr);
+        }
     }
 
     function settleCfd(
@@ -283,8 +288,8 @@ contract ContractForDifference is DSAuth {
         Cfd storage cfd = contracts[cfdId];
         Party storage party = partyAddress == cfd.maker.addr ? cfd.maker : cfd.taker;
         require(party.withdrawBalance > 0); // The party must have a withdraw balance from previous settlement.
-        require(!party.isPaid); // The party must have already been paid out, fx from a refund.
-        
+        require(!party.isPaid); // The party must not be already paid out, fx from a refund.
+
         uint128 amount = party.withdrawBalance;
         party.withdrawBalance = 0;
         party.isPaid = true;
